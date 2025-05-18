@@ -15,52 +15,42 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
-      # 2. .NET SDK 8
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
-      
-      # 3. Restore + build
+
       - name: Restore
         run: dotnet restore GeoProfiles.sln
 
-      - name: Build (warnings → errors)
+      - name: Build
         run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
-      
-      # 4. Docker compose
-      - name: Build Docker images
-        run: docker compose -f compose.yaml build app postgres-db
 
-      - name: Start containers
-        run: docker compose -f compose.yaml up -d app postgres-db
-      
-      - name: Wait for API to be healthy
+      - name: Run infra script
+        run: |
+          chmod +x GeoProfiles/scripts/run-infra.sh
+          GeoProfiles/scripts/run-infra.sh
+
+      - name: Wait for API
         run: |
           for i in {1..60}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || true)
-            if [ "$status" = "200" ]; then
-              echo "API is healthy"
-              exit 0
-            fi
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || true)
+            [ "$code" = "200" ] && exit 0
             sleep 1
           done
-          echo "API did not become healthy in time" && exit 1
-      
-      # 5. Node + Jest
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          echo "API did not become healthy" && exit 1
+
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
+          cache: npm
 
       - name: Install JS deps
         run: npm ci
 
       - name: Run Jest integration tests
         run: npm test
-      
-      - name: Shut down containers
+
+      - name: Down containers
         if: always()
-        run: docker compose -f compose.yaml down -v
+        run: docker-compose down -v
