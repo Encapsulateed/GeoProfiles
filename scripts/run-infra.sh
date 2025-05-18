@@ -7,12 +7,15 @@ docker compose down --remove-orphans -v
 docker compose up -d
 docker compose run --rm migration
 
-echo "Scaffolding db context for GeoProfiles..."
+echo "Building GeoProfiles project…"
+dotnet build GeoProfiles/GeoProfiles.csproj -c Release
+
+echo "Scaffolding DB context for GeoProfiles…"
+pushd GeoProfiles >/dev/null
 
 dotnet ef dbcontext scaffold \
   "Name=ConnectionStrings:DefaultConnection" \
   Npgsql.EntityFrameworkCore.PostgreSQL \
-  --project GeoProfiles/GeoProfiles.csproj \
   --output-dir Model/Generated \
   --namespace "GeoProfiles.Model" \
   --context "GeoProfilesContext" \
@@ -22,4 +25,5 @@ dotnet ef dbcontext scaffold \
   --no-build \
   --force
 
-echo "Scaffolding db context finished."
+popd >/dev/null
+echo "Scaffolding finished."
