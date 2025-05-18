@@ -26,9 +26,6 @@ jobs:
       - name: Build
         run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
         
-      - name: Install dotnet-ef
-        run: dotnet tool install --global dotnet-ef --version 8.0.0
-        
       - name: Run infra script
         run: |
               chmod +x scripts/run-ci-infra.sh
@@ -38,10 +35,14 @@ jobs:
         run: |
           for i in {1..60}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || true)
-            [ "$code" = "200" ] && exit 0
+            if [ "$code" = "200" ]; then
+              echo "API is healthy"; exit 0
+            fi
             sleep 1
           done
-          echo "API did not become healthy" && exit 1
+          echo "API did not become healthy"
+          docker compose logs app || true      # ← покажем логи, чтобы понять, почему
+          exit 1
 
       - uses: actions/setup-node@v4
         with:
