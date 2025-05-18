@@ -11,6 +11,7 @@ dotnet tool restore
 
 echo "Scaffolding db context for GeoProfiles..."
 
+cd ..
 cd GeoProfiles
 
 dotnet ef dbcontext scaffold \
