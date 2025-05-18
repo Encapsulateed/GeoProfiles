@@ -20,24 +20,24 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: GeoProfiles/packages.lock.json
       
-      - name: Restore NuGet
-        run: dotnet restore GeoProfiles/GeoProfiles.sln
+      - name: Restore
+        run: dotnet restore GeoProfiles.sln
       
       - name: Build (warnings → errors)
-        run: dotnet build GeoProfiles/GeoProfiles.sln --configuration Release -warnaserror
-  
+        run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: GeoProfiles/GeoProfiles/package-lock.json
-
+          cache-dependency-path: package-lock.json
+      
       - name: Install JS deps
-        working-directory: GeoProfiles/GeoProfiles
         run: npm ci
-
+      
       - name: Run Jest integration tests
-        working-directory: GeoProfiles/GeoProfiles
         run: npm test
