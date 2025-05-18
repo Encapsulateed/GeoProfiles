@@ -23,6 +23,16 @@ describe('api/v1/get-test', () => {
         // Assert
         expect(response.status).toBe(400);
     })
+    it('returns 500 INTERNAL ERROR', async () => {
+        // Arrange 
+        const param = '';
+
+        // Act
+        const response = await makeRequest(param);
+
+        // Assert
+        expect(response.status).toBe(500);
+    })
 })
 
 async function makeRequest(param) {

@@ -22,7 +22,6 @@ if (app.Environment.IsDevelopment())
 
 // Add middlewares
 app.UseMiddleware<RequestIdMiddleware>();
-app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
