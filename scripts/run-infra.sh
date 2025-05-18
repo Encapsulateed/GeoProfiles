@@ -16,7 +16,6 @@ pushd GeoProfiles >/dev/null
 dotnet ef dbcontext scaffold \
   "Name=ConnectionStrings:DefaultConnection" \
   Npgsql.EntityFrameworkCore.PostgreSQL \
-  --configuration Release \ \
   --output-dir Model/Generated \
   --namespace "GeoProfiles.Model" \
   --context "GeoProfilesContext" \
