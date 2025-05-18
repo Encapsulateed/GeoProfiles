@@ -2,8 +2,8 @@
   app:
     container_name: app
     build:
-      context: ./GeoProfiles
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: GeoProfiles/Dockerfile
     ports:
       - "8080:8080"
       - "8082:8082"
