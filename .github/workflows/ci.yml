@@ -15,17 +15,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-          
+
       - name: Restore
         run: dotnet restore GeoProfiles.sln
-      
+
       - name: Build (warnings → errors)
         run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
+        
+      - name: Wait for API
+        run: |
+          for i in {1..60}; do
+            curl -sf http://localhost:8080/healthz && exit 0
+            sleep 1
+          done
+          echo "API did not become healthy" && exit 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,9 +41,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      
+
       - name: Install JS deps
         run: npm ci
-      
+
       - name: Run Jest integration tests
         run: npm test

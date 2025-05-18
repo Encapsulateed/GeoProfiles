@@ -26,5 +26,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 
 app.Run();
