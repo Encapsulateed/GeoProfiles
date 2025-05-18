@@ -7,6 +7,7 @@ var builder = CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddHealthChecks();
 
 // Add logging
 builder.AddSerilogLogging();
@@ -21,10 +22,10 @@ if (app.Environment.IsDevelopment())
 
 // Add middlewares
 app.UseMiddleware<RequestIdMiddleware>();
-app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 
 app.Run();

@@ -12,6 +12,8 @@ public class GetTest(ILogger<GetTest> logger) : ControllerBase
     [ProducesResponseType(typeof(Ok), StatusCodes.Status200OK)]
     public Task<IActionResult> Get([FromQuery] string param)
     {
+        logger.LogInformation("Get test");
+
         new Validator().ValidateAndThrow(param);
 
         return Task.FromResult<IActionResult>(Ok());
