@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-docker-compose down --remove-orphans -v
+docker compose down --remove-orphans -v
 
-docker-compose up -d
+docker compose up -d
 
-docker-compose run --rm migration
+docker compose run --rm migration
 
 dotnet tool restore
 
