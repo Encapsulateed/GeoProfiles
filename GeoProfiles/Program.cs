@@ -7,6 +7,7 @@ var builder = CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddHealthChecks();
 
 // Add logging
 builder.AddSerilogLogging();

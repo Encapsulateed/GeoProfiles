@@ -41,7 +41,7 @@ jobs:
             sleep 1
           done
           echo "API did not become healthy"
-          docker compose logs app || true      # ← покажем логи, чтобы понять, почему
+          docker compose logs app || true
           exit 1
 
       - uses: actions/setup-node@v4
