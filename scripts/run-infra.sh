@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
 
 docker compose down --remove-orphans -v
-
 docker compose up -d
-
 docker compose run --rm migration
 
-dotnet tool restore
-
 echo "Scaffolding db context for GeoProfiles..."
-
-cd ..
-cd GeoProfiles
 
 dotnet ef dbcontext scaffold \
   "Name=ConnectionStrings:DefaultConnection" \
   Npgsql.EntityFrameworkCore.PostgreSQL \
-  --project GeoProfiles.csproj \
+  --project GeoProfiles/GeoProfiles.csproj \
   --output-dir Model/Generated \
   --namespace "GeoProfiles.Model" \
   --context "GeoProfilesContext" \
