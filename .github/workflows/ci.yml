@@ -25,7 +25,10 @@ jobs:
 
       - name: Build
         run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
-
+        
+      - name: Install dotnet-ef tool
+        run: dotnet tool install dotnet-ef --local --version 8.0.0
+        
       - name: Run infra script
         run: |
               chmod +x scripts/run-infra.sh
@@ -53,4 +56,4 @@ jobs:
 
       - name: Down containers
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
