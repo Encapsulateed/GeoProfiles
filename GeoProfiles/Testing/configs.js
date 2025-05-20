@@ -1,7 +1,7 @@
 const dbConfig = {
     client: 'pg',
     connection: {
-        host: process.env.PG_INSTANCE ?? 'localhost',
+        host: process.env.PG_INSTANCE ?? '127.0.0.1',
         port : 5430,
         user: process.env.PG_USER ?? 'db_usr',
         password: process.env.PG_PASSWORD ?? 'db_pass',
