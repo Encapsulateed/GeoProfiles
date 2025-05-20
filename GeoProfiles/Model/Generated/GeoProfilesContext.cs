@@ -14,7 +14,7 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
 
-    public virtual DbSet<Logs> Logs { get; set; }
+    public virtual DbSet<SystemLogs> SystemLogs { get; set; }
 
     public virtual DbSet<Users> Users { get; set; }
 
@@ -60,11 +60,11 @@ public partial class GeoProfilesContext : DbContext
                 .HasColumnName("version");
         });
 
-        modelBuilder.Entity<Logs>(entity =>
+        modelBuilder.Entity<SystemLogs>(entity =>
         {
             entity
                 .HasNoKey()
-                .ToTable("logs");
+                .ToTable("system_logs");
 
             entity.Property(e => e.Exception).HasColumnName("exception");
             entity.Property(e => e.Level).HasColumnName("level");
