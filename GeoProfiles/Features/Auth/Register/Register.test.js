@@ -24,7 +24,7 @@ describe('POST /api/v1/register', () => {
             const response = await makeRequest(request);
 
             // Assert HTTP
-            console.log(response);
+            console.log(response.data);
 
             expect(response.status).toBe(201);
             expect(response.data).toMatchObject({username, email});
@@ -77,7 +77,7 @@ describe('POST /api/v1/register', () => {
             const response = await makeRequest(request);
 
             // Assert HTTP
-            console.log(response);
+            console.log(response.data);
             
             expect(response.status).toBe(400);
             expect(response.data.message).toBe('User already exists');
