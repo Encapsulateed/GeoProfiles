@@ -46,6 +46,8 @@
     entrypoint: [
       "sh", "-c",
       "flyway \   
+        -baselineOnMigrate=true \
+        -baselineVersion=0 \    
         -url=jdbc:postgresql://postgres-db:5432/db \
         -user=db_usr \
         -password=db_pass \
