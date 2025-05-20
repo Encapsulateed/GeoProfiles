@@ -12,7 +12,7 @@
       API__Swagger__Enabled: 'true'
       API__Auth__BasicAuthUsers__admin__Password: admin
       API__Auth__BasicAuthUsers__test__Password: test
-      ConnectionStrings__DefaultConnection: Host=postgres;Database=db;Username=db_usr;Password=db_pass
+      ConnectionStrings__DefaultConnection: Host=postgres-db;Database=db;Username=db_usr;Password=db_pass
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
       interval: 10s
