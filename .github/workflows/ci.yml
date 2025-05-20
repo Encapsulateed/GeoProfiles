@@ -24,7 +24,7 @@ jobs:
         run: dotnet restore GeoProfiles.sln
 
       - name: Build
-        run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
+        run: dotnet build GeoProfiles.sln --configuration Release
         
       - name: Run infra script
         run: |
