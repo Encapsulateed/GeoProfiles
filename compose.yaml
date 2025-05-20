@@ -45,8 +45,7 @@
         condition: service_healthy
     entrypoint: [
       "sh", "-c",
-      "flyway \
-        -baselineOnMigrate=true \    
+      "flyway \   
         -url=jdbc:postgresql://postgres-db:5432/db \
         -user=db_usr \
         -password=db_pass \
