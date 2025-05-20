@@ -3,7 +3,7 @@
     container_name: app
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: GeoProfiles/Dockerfile
     ports:
       - "8080:8080"
       - "8082:8082"
@@ -12,6 +12,11 @@
       API__Swagger__Enabled: 'true'
       API__Auth__BasicAuthUsers__admin__Password: admin
       API__Auth__BasicAuthUsers__test__Password: test
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
+      interval: 10s
+      timeout: 3s
+      retries: 12
     profiles: [ "app" ]
 
   postgres-db:

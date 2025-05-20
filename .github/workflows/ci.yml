@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore GeoProfiles.sln
+
+      - name: Build
+        run: dotnet build GeoProfiles.sln --configuration Release -warnaserror
+        
+      - name: Run infra script
+        run: |
+              chmod +x scripts/run-ci-infra.sh
+              scripts/run-ci-infra.sh
+
+      - name: Wait for API
+        run: |
+          for i in {1..60}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || true)
+            if [ "$code" = "200" ]; then
+              echo "API is healthy"; exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become healthy"
+          docker compose logs app || true
+          exit 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install JS deps
+        run: npm ci
+
+      - name: Run Jest integration tests
+        run: npm test
+
+      - name: Down containers
+        if: always()
+        run: docker compose down -v
