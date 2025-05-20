@@ -7,7 +7,7 @@ namespace GeoProfiles.Infrastructure.Extensions;
 
 public static class SerilogExtensions
 {
-    private const string Table = "system_logs";
+    private const string Table = "logs";
     private const string SchemaName = "public";
 
     public static WebApplicationBuilder AddSerilogLogging(this WebApplicationBuilder builder)

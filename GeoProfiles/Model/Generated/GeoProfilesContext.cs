@@ -14,6 +14,8 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
 
+    public virtual DbSet<Logs> Logs { get; set; }
+
     public virtual DbSet<Users> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,6 +58,19 @@ public partial class GeoProfilesContext : DbContext
             entity.Property(e => e.Version)
                 .HasMaxLength(50)
                 .HasColumnName("version");
+        });
+
+        modelBuilder.Entity<Logs>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("logs");
+
+            entity.Property(e => e.Exception).HasColumnName("exception");
+            entity.Property(e => e.Level).HasColumnName("level");
+            entity.Property(e => e.Message).HasColumnName("message");
+            entity.Property(e => e.RaiseDate).HasColumnName("raise_date");
+            entity.Property(e => e.RequestId).HasColumnName("request_id");
         });
 
         modelBuilder.Entity<Users>(entity =>
