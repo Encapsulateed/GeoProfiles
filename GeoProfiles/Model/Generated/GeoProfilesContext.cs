@@ -68,6 +68,8 @@ public partial class GeoProfilesContext : DbContext
 
             entity.HasIndex(e => e.Username, "users_username_key").IsUnique();
 
+            entity.HasIndex(e => e.Email, "ux_users_email");
+
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("uuid_generate_v4()")
                 .HasColumnName("id");

@@ -22,6 +22,8 @@ create table if not exists users (
     updated_at timestamp with time zone not null default now()
 );
 
+create index ux_users_email on users(email);
+
 create trigger users_updated_at
     before update
     on users

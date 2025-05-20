@@ -29,6 +29,7 @@
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
         <PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.3" />
     </ItemGroup>
 
     <ItemGroup>
