@@ -5,7 +5,7 @@ const testData = {
     ...require('../../Users/UserTestData')
 };
 
-const {prepareUserInDb, getUserFromDb, getUserListFromDb} = testData.users;
+const {prepareUserInDb, getUserFromDb} = testData.users;
 
 async function makeRequest(request) {
     return await httpClient.post('api/v1/register', request);
@@ -24,6 +24,8 @@ describe('POST /api/v1/register', () => {
             const response = await makeRequest(request);
 
             // Assert HTTP
+            console.log(response);
+
             expect(response.status).toBe(201);
             expect(response.data).toMatchObject({username, email});
 
@@ -75,6 +77,8 @@ describe('POST /api/v1/register', () => {
             const response = await makeRequest(request);
 
             // Assert HTTP
+            console.log(response);
+            
             expect(response.status).toBe(400);
             expect(response.data.message).toBe('User already exists');
 

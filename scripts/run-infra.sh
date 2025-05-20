@@ -7,9 +7,6 @@ docker compose down --remove-orphans -v
 docker compose up -d
 docker compose run --rm migration
 
-echo "Building GeoProfiles project…"
-dotnet build GeoProfiles/GeoProfiles.csproj -c Release
-
 echo "Scaffolding DB context for GeoProfiles…"
 pushd GeoProfiles >/dev/null
 
