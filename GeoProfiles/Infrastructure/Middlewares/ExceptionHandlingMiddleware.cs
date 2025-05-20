@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentValidation;
 using Serilog;
 
@@ -13,45 +14,46 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         {
             await next(context);
         }
-        catch (ValidationException ex)
+        catch (ValidationException ve)
         {
-            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
-            context.Response.ContentType = "application/json";
-
-            var errors = ex.Errors
+            var errors = ve.Errors
                 .Select(e => new {field = e.PropertyName, error = e.ErrorMessage})
                 .ToArray();
 
-            var payload = new
-            {
-                message = "Validation error",
-                details = errors
-            };
+            var responseObj = new ErrorResponse(
+                ErrorCode: "VALIDATION_ERROR",
+                ErrorMessage: "Validation failed",
+                ErrorDetails: errors
+            );
 
-            Log.Information("Validation error was processed");
-
-            await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+            await WriteResponse(context, HttpStatusCode.BadRequest, responseObj);
         }
-
         catch (Exception ex)
         {
-            Log.Error(ex, "Unhandled exception occurred while processing request {Method} {Path}",
-                context.Request.Method, context.Request.Path);
+            Log.Error(ex, "Unhandled exception while processing {Method} {Path}", context.Request.Method,
+                context.Request.Path);
 
-            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-            context.Response.ContentType = "application/json";
+            var responseObj = new ErrorResponse(
+                ErrorCode: "INTERNAL_ERROR",
+                ErrorMessage: "An unexpected error occurred.",
+                ErrorDetails: ex.Message
+            );
 
-            var errorResponse = new
-            {
-                error = new
-                {
-                    message = "An unexpected error occurred.",
-                    detail = ex.Message
-                }
-            };
-
-            var json = JsonSerializer.Serialize(errorResponse);
-            await context.Response.WriteAsync(json);
+            await WriteResponse(context, HttpStatusCode.InternalServerError, responseObj);
         }
+    }
+
+    private static async Task WriteResponse(HttpContext context, HttpStatusCode statusCode, ErrorResponse error)
+    {
+        context.Response.StatusCode = (int) statusCode;
+        context.Response.ContentType = "application/json";
+
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var json = JsonSerializer.Serialize(error, options);
+        await context.Response.WriteAsync(json);
     }
 }

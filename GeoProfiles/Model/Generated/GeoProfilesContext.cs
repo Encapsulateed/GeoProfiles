@@ -14,6 +14,8 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
 
+    public virtual DbSet<SystemLogs> SystemLogs { get; set; }
+
     public virtual DbSet<Users> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -58,6 +60,19 @@ public partial class GeoProfilesContext : DbContext
                 .HasColumnName("version");
         });
 
+        modelBuilder.Entity<SystemLogs>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("system_logs");
+
+            entity.Property(e => e.Exception).HasColumnName("exception");
+            entity.Property(e => e.Level).HasColumnName("level");
+            entity.Property(e => e.Message).HasColumnName("message");
+            entity.Property(e => e.RaiseDate).HasColumnName("raise_date");
+            entity.Property(e => e.RequestId).HasColumnName("request_id");
+        });
+
         modelBuilder.Entity<Users>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
@@ -67,6 +82,8 @@ public partial class GeoProfilesContext : DbContext
             entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
 
             entity.HasIndex(e => e.Username, "users_username_key").IsUnique();
+
+            entity.HasIndex(e => e.Email, "ux_users_email");
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("uuid_generate_v4()")

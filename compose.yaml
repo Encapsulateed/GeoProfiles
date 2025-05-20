@@ -12,6 +12,7 @@
       API__Swagger__Enabled: 'true'
       API__Auth__BasicAuthUsers__admin__Password: admin
       API__Auth__BasicAuthUsers__test__Password: test
+      ConnectionStrings__DefaultConnection: Host=postgres-db;Database=db;Username=db_usr;Password=db_pass
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
       interval: 10s
@@ -31,15 +32,22 @@
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U db_usr" ]
+      interval: 5s
+      retries: 10
 
   migration:
     image: flyway/flyway:9.21
     container_name: flyway_migration
     depends_on:
-      - postgres-db
+      postgres-db:
+        condition: service_healthy
     entrypoint: [
       "sh", "-c",
-      "flyway \
+      "flyway \   
+        -baselineOnMigrate=true \
+        -baselineVersion=0 \    
         -url=jdbc:postgresql://postgres-db:5432/db \
         -user=db_usr \
         -password=db_pass \
