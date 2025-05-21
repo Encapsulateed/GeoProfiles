@@ -2,7 +2,7 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace GeoProfiles.Features.Auth.Register;
 
-public record RegisterRequest
+public record UserDataRequest
 {
     public string Username { get; init; } = null!;
     public string Email { get; init; } = null!;
@@ -10,11 +10,11 @@ public record RegisterRequest
     public string PasswordHash { get; init; } = null!;
 }
 
-public record RegisterRequestExample : IExamplesProvider<RegisterRequest>
+public record UserDataRequestExample : IExamplesProvider<UserDataRequest>
 {
-    public RegisterRequest GetExamples()
+    public UserDataRequest GetExamples()
     {
-        return new RegisterRequest
+        return new UserDataRequest
         {
             Username = "sample-username",
             Email = "sample-email@gmail.com",

@@ -23,7 +23,12 @@ builder.AddSerilogLogging();
 // Swagger 
 builder.Services.AddSwaggerDocumentation();
 
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
 var app = builder.Build();
+
+// Add authentication
+app.UseJwtAuthentication();
 
 app.UseSwaggerDocumentation();
 
