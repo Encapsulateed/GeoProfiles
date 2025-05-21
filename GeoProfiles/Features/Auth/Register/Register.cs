@@ -26,12 +26,12 @@ public class Register(
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-    [SwaggerRequestExample(typeof(RegisterRequest), typeof(RegisterRequestExample))]
+    [SwaggerRequestExample(typeof(UserDataRequest), typeof(UserDataRequestExample))]
     [SwaggerResponseExample(StatusCodes.Status201Created, typeof(UserDtoExample))]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(BadRequestExample))]
     public async Task<IActionResult> Action
     (
-        [FromBody] RegisterRequest request,
+        [FromBody] UserDataRequest request,
         CancellationToken cancellationToken = default
     )
     {
@@ -65,7 +65,7 @@ public class Register(
         return StatusCode(StatusCodes.Status201Created, userEntity.ToDto());
     }
 
-    private class Validator : AbstractValidator<RegisterRequest>
+    private class Validator : AbstractValidator<UserDataRequest>
     {
         public Validator()
         {
