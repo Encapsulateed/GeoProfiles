@@ -14,7 +14,7 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
 
-    public virtual DbSet<SystemLogs> SystemLogs { get; set; }
+    public virtual DbSet<RefreshTokens> RefreshTokens { get; set; }
 
     public virtual DbSet<Users> Users { get; set; }
 
@@ -60,17 +60,37 @@ public partial class GeoProfilesContext : DbContext
                 .HasColumnName("version");
         });
 
-        modelBuilder.Entity<SystemLogs>(entity =>
+        modelBuilder.Entity<RefreshTokens>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("system_logs");
+            entity.HasKey(e => e.Id).HasName("refresh_tokens_pkey");
 
-            entity.Property(e => e.Exception).HasColumnName("exception");
-            entity.Property(e => e.Level).HasColumnName("level");
-            entity.Property(e => e.Message).HasColumnName("message");
-            entity.Property(e => e.RaiseDate).HasColumnName("raise_date");
-            entity.Property(e => e.RequestId).HasColumnName("request_id");
+            entity.ToTable("refresh_tokens");
+
+            entity.HasIndex(e => e.UserId, "ix_refresh_tokens_user_id");
+
+            entity.HasIndex(e => e.Token, "refresh_tokens_token_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("uuid_generate_v4()")
+                .HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
+            entity.Property(e => e.IsRevoked)
+                .HasDefaultValue(false)
+                .HasColumnName("is_revoked");
+            entity.Property(e => e.Token)
+                .HasMaxLength(2000)
+                .HasColumnName("token");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_refresh_tokens_users");
         });
 
         modelBuilder.Entity<Users>(entity =>

@@ -4,15 +4,17 @@ using GeoProfiles.Features.Auth.Register;
 using GeoProfiles.Features.JWT;
 using GeoProfiles.Infrastructure;
 using GeoProfiles.Infrastructure.Examples;
+using GeoProfiles.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace GeoProfiles.Features.Auth.Login;
 
+
 public class Login(
     GeoProfilesContext db,
-    IJwtTokenService jwtTokenService,
+    ITokenService tokenService,
     ILogger<Login> logger
 ) : ControllerBase
 {
@@ -50,11 +52,12 @@ public class Login(
             ));
         }
 
-        var token = jwtTokenService.CreateToken(user.Id, user.Username, []);
+        var (accessToken, refreshToken) = tokenService.GenerateTokens(user.Id, user.Username, []);
 
         var dto = new TokenDto
         {
-            Token = token,
+            Token = accessToken,
+            RefreshToken = refreshToken,
             TokenType = "Bearer",
             ExpiresIn = ExpiresIn
         };

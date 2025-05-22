@@ -1,4 +1,5 @@
 using System;
+using GeoProfiles.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -53,7 +54,8 @@ namespace GeoProfiles.Infrastructure.Extensions
                     };
                 });
 
-            services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddSingleton<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<ITokenService, TokenService>();
 
             services.AddAuthorization();
             return services;

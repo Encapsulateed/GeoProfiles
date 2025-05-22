@@ -25,7 +25,7 @@ public static class SerilogExtensions
 
         if (connStr != null)
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.PostgreSQL(
