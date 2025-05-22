@@ -8,4 +8,8 @@ docker compose build app postgres-db
 
 docker compose up -d app postgres-db
 
+docker compose build app mock-server
+
+docker compose up -d app mock-server
+
 docker compose run --rm migration

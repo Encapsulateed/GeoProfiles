@@ -1,0 +1,31 @@
+[
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/oauth2/jwks"
+    },
+    "httpResponse": {
+      "body": {
+        "type": "JSON",
+        "json": {
+          "keys": [
+            {
+              "kty": "RSA",
+              "kid": "GeoProfiles",
+              "use": "sig",
+              "alg": "RS256",
+              "e": "AQAB",
+              "n": "6MswBa9J_FN4Y-m9DUUGDZWr22fFdzd0y5jTqYcWwGjPHoU8bXhzYZbPwRBtC_w-_R2VfidFNCXU2YqGgONRLB-P09-Mc4QV-5woGROnERRpDwdNhEf82XSYBPBvbRK9FjPbucB04QW4wPlr4zGcyxenO-r-p8Fx5XRa9BVECWKcaq6JOaXxyuCzs2T-IB_Wudz4KQQss0YGZLMskB42COtsdmgkKRQxHEzjoOTJQq2Z8Wmxhy70BfnX2eboVyQ0oM6SXmrzm9K3vt1h4nJG4zW_wwa1J1y9qNOr-4P5UeylG8E7absplNWPDbEMjVzrMvmuig696cjDmW3rdwYjPQ",
+              "d": "lpzHIBZt1rumW3YhY1Fx_h4Ex3oXDu-pOARThQ4qkSf-QO_Qzb6tX8kz9uQKuUNk-VxHmQwNQRTs5iYyqXbo0JRG-LxcYWxm0JgSdU76uxkqc5e09k2g8Iv3wtJQNRB3l8LLeR1kQSXzh56Xx7EUkW1nPGPoiF6mst6Z7etITozrWayVgOkxNofGqkq1ECGZOM0K0VRQwps1c5qSjW-UmQSpn4zoh37VbVYtiTldzbIkLnmzNsnotmFTvoDiX7fyNlywRzJ94A3aTlzdyzRNk5Zbh5uXuJuReIS6boEwz2Q4MXFAVjQPk26UfY4JYR_0Q2A72-vvMrL7yJwQsBWwYQ",
+              "p": "-ERE1QoqkSn8LPJx_SRDa0lK2xu7uFnVwjb-Vpwyb4HJzFl116sp9MohaE3NjZoMyP7DADhrF2MB2MwmrPeNuWSEMmf4xcWMEefrkTPapnbPiDnaAqXMGEy0Y0HHoX8pIuDJG1ntYgpesdQGR5cNCg4UZFN_EuSX3VykAcZvNZk",
+              "q": "8AuIsA2Cny-H6JSWuqo6j87KtlHq5sStr7imPfAwX9rfBuPF9topQzV2pooLpxwAOqHYPrkoqA2u1olUov--wKdl5XkBG0e64y4mil-xQ3s76ra1mpDbQ5rKjYQ2-IEZWo2mwgeN17mFN0sTiLrrD7dUFZg1XPA0B6uJhrJO2UU",
+              "dp": "DecUy7FUDOkC_ClfhMOBGwLxtC9rZblyJPwbZhI9KM1l1ZG07aziHpkrIcIpnqJf0OmjVeHS7W5X7iIQkGMUhqtAU-pKnhif7WjFYk47ElNY79H9iWRrd3jkKSLH4R1T2mYoHOX-Sx01jFPJPj0RN9zt-2hJl29Bqd3EOW05URE",
+              "dq": "t0tnXV-DnYAS3GMR0YmI3CTAn4VfxETsh2CM-IC-v4MGiGFG2d7uYRai-jow-bKk7iCFWifSxrhkCAenbCuzAbMRWK8UTDtylmS4IzM8zVV9hBVuCI-SDkZVYshRnWIe9QlzC3fvNInCEl2uldp9AWwwtaibHtOAN1ch1Yu0L60",
+              "qi": "uROCZo_xVgBm0QhHk9saseZQOj5u1IVm98zfY5ntrMKXXUBmrkwosipDNALkGv7VfaYPFqjOISXlrQNs99kVPlueKTUubHWOtjwqXk2uKsYSSnUNjMfI0E-LOnnFH8CdMpjtid2PVEZKk551ZcP-D8iOO7AyFGww9dZADQh9lwM"
+            }
+          ]
+        }
+      }
+    }
+  }
+]

@@ -30,7 +30,7 @@ describe('POST /api/v1/auth/login', () => {
             });
 
             // Assert JWT payload
-            const payload = verifyToken(response.data.token);
+            const payload = await verifyToken(response.data.token);
             expect(payload.sub).toBe(user.id);
             expect(payload.unique_name).toBe(username);
         });

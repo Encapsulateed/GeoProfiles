@@ -1,10 +1,12 @@
-using System.Text;
-using GeoProfiles.Infrastructure.Settings;
+using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Serilog;
-
-#pragma warning disable CA2208
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using GeoProfiles.Infrastructure.Settings;
 
 namespace GeoProfiles.Infrastructure.Extensions
 {
@@ -13,49 +15,47 @@ namespace GeoProfiles.Infrastructure.Extensions
         public static IServiceCollection AddJwtAuthentication(this IServiceCollection services,
             IConfiguration configuration)
         {
-            var jwtSection = configuration.GetSection("JwtSettings");
-            services.Configure<JwtSettings>(jwtSection);
+            var section = configuration.GetSection("JwtSettings");
+            services.Configure<JwtSettings>(section);
+            var settings = section.Get<JwtSettings>();
 
-            var jwtSettings = jwtSection.Get<JwtSettings>();
+            // необходим HttpClient для JWKS
+            services.AddHttpClient();
 
-            if (jwtSettings is null)
-            {
-                throw new ArgumentNullException(nameof(jwtSettings));
-            }
-
-            if (jwtSettings.Enabled is false)
-            {
-                Log.Warning("JWT authentication is disabled");
-                return services;
-            }
-
-            var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
-
-            services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    options.RequireHttpsMetadata = jwtSettings.RequireHttpsMetadata;
-                    options.SaveToken = jwtSettings.SaveToken;
+                    options.RequireHttpsMetadata = settings.RequireHttpsMetadata;
+                    options.SaveToken = settings.SaveToken;
+
+                    // настраиваем получение ключей через OpenID Connect metadata
+                    var httpClient = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>()
+                        .CreateClient();
+                    var retriever = new HttpDocumentRetriever {RequireHttps = settings.RequireHttpsMetadata};
+                    var configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                        settings.SigningJwksUri,
+                        new OpenIdConnectConfigurationRetriever(),
+                        retriever);
+                    options.ConfigurationManager = configManager;
+
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = jwtSettings.ValidateIssuer,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidateAudience = jwtSettings.ValidateAudience,
-                        ValidAudience = jwtSettings.Audience,
-                        ValidateIssuerSigningKey = jwtSettings.ValidateIssuerSigningKey,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateLifetime = jwtSettings.ValidateLifetime,
-                        ValidAlgorithms = [SecurityAlgorithms.HmacSha256, SecurityAlgorithms.RsaSha256]
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKeyResolver = (_, _, _, _) =>
+                            configManager.GetConfigurationAsync().Result.SigningKeys,
+                        ValidateIssuer = settings.ValidateIssuer,
+                        ValidIssuer = settings.Issuer,
+                        ValidateAudience = settings.ValidateAudience,
+                        ValidAudience = settings.Audience,
+                        ValidateLifetime = settings.ValidateLifetime,
+                        ClockSkew = TimeSpan.FromMinutes(settings.ClockSkewMinutes),
+                        ValidAlgorithms = ["RSA256"]
                     };
                 });
 
-            services.AddSingleton<IJwtTokenService, JwtTokenService>();
-            services.AddAuthorization();
+            services.AddScoped<IJwtTokenService, JwtTokenService>();
 
+            services.AddAuthorization();
             return services;
         }
 
