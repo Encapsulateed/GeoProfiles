@@ -14,6 +14,8 @@
       API__Auth__BasicAuthUsers__test__Password: test
       JwtSettings__SigningJwksUri: 'http://mock-server:1080/oauth2/jwks'
       ConnectionStrings__DefaultConnection: Host=postgres-db;Database=db;Username=db_usr;Password=db_pass
+    depends_on:
+      - mock-server
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/healthz" ]
       interval: 10s

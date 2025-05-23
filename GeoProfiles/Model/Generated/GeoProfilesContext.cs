@@ -16,6 +16,8 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<RefreshTokens> RefreshTokens { get; set; }
 
+    public virtual DbSet<SystemLogs> SystemLogs { get; set; }
+
     public virtual DbSet<Users> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -91,6 +93,19 @@ public partial class GeoProfilesContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("fk_refresh_tokens_users");
+        });
+
+        modelBuilder.Entity<SystemLogs>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("system_logs");
+
+            entity.Property(e => e.Exception).HasColumnName("exception");
+            entity.Property(e => e.Level).HasColumnName("level");
+            entity.Property(e => e.Message).HasColumnName("message");
+            entity.Property(e => e.RaiseDate).HasColumnName("raise_date");
+            entity.Property(e => e.RequestId).HasColumnName("request_id");
         });
 
         modelBuilder.Entity<Users>(entity =>
