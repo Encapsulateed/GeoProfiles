@@ -7,31 +7,55 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  setup-dotnet:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-
+    outputs:
+      dotnet-restore: ${{ steps.restore.outputs.cache-hit }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore
+      - name: Restore NuGet packages
+        id: restore
         run: dotnet restore GeoProfiles.sln
 
-      - name: Build
+  build:
+    needs: setup-dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build solution
         run: dotnet build GeoProfiles.sln --configuration Release
-        
+
+  infra:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout infra scripts
+        uses: actions/checkout@v4
+
       - name: Run infra script
         run: |
-              chmod +x scripts/run-ci-infra.sh
-              scripts/run-ci-infra.sh
+          chmod +x scripts/run-ci-infra.sh
+          scripts/run-ci-infra.sh
 
-      - name: Wait for API
+  wait-for-api:
+    needs: infra
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for API health
         run: |
           for i in {1..60}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || true)
@@ -40,11 +64,19 @@ jobs:
             fi
             sleep 1
           done
-          echo "API did not become healthy"
+          echo "❌ API did not become healthy"
           docker compose logs app || true
           exit 1
 
-      - uses: actions/setup-node@v4
+  setup-node:
+    needs: wait-for-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
@@ -52,9 +84,29 @@ jobs:
       - name: Install JS deps
         run: npm ci
 
+  jest-integration:
+    needs: setup-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
       - name: Run Jest integration tests
         run: npm test
 
+  teardown:
+    needs: [jest-integration]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Down containers
-        if: always()
         run: docker compose down -v
