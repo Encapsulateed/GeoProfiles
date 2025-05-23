@@ -9,8 +9,6 @@ on:
 jobs:
   setup-dotnet:
     runs-on: ubuntu-latest
-    outputs:
-      dotnet-restore: ${{ steps.restore.outputs.cache-hit }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,7 +19,6 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore NuGet packages
-        id: restore
         run: dotnet restore GeoProfiles.sln
 
   build:
@@ -39,22 +36,29 @@ jobs:
       - name: Build solution
         run: dotnet build GeoProfiles.sln --configuration Release
 
-  infra:
+  test-app-pr:
     needs: build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
-      - name: Checkout infra scripts
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build solution
+        run: dotnet build GeoProfiles.sln --configuration Release
 
       - name: Run infra script
         run: |
           chmod +x scripts/run-ci-infra.sh
           scripts/run-ci-infra.sh
 
-  wait-for-api:
-    needs: infra
-    runs-on: ubuntu-latest
-    steps:
       - name: Wait for API health
         run: |
           for i in {1..60}; do
@@ -64,16 +68,9 @@ jobs:
             fi
             sleep 1
           done
-          echo "❌ API did not become healthy"
+          echo "API did not become healthy"
           docker compose logs app || true
           exit 1
-
-  setup-node:
-    needs: wait-for-api
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -84,26 +81,13 @@ jobs:
       - name: Install JS deps
         run: npm ci
 
-  jest-integration:
-    needs: setup-node
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-
       - name: Run Jest integration tests
         run: npm test
 
   teardown:
-    needs: [jest-integration]
-    runs-on: ubuntu-latest
+    needs: test-app-pr
     if: always()
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
