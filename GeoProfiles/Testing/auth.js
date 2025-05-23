@@ -30,6 +30,8 @@ async function generateAccessToken(options = {}) {
 
     const payload = {
         user_id: options.userId,
+        user_name: options.userName,
+        email: options.email,
         aud: options.audience ?? ['GeoProfilesClients'],
         iss: options.issuer ?? jwksUri,
         exp: options.expires ?? now + 3600,

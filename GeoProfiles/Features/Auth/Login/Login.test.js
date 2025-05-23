@@ -31,8 +31,8 @@ describe('POST /api/v1/auth/login', () => {
 
             // Assert JWT payload
             const payload = await verifyToken(response.data.token);
-            expect(payload.sub).toBe(user.id);
-            expect(payload.unique_name).toBe(username);
+            expect(payload.user_id).toBe(user.id);
+            expect(payload.user_name).toBe(username);
         });
     });
 

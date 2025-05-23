@@ -7,7 +7,8 @@ namespace GeoProfiles.Infrastructure.Services;
 
 public interface ITokenService
 {
-    (string AccessToken, string RefreshToken) GenerateTokens(Guid userId, string username, string[] roles);
+    (string AccessToken, string RefreshToken)
+        GenerateTokens(Guid userId, string username, string email, string[] roles);
 }
 
 public class TokenService(
@@ -16,9 +17,10 @@ public class TokenService(
     IOptions<JwtSettings> opts)
     : ITokenService
 {
-    public (string AccessToken, string RefreshToken) GenerateTokens(Guid userId, string username, string[] roles)
+    public (string AccessToken, string RefreshToken) GenerateTokens(Guid userId, string username, string email,
+        string[] roles)
     {
-        var access = jwt.CreateToken(userId, username, roles);
+        var access = jwt.CreateToken(userId, username, email, roles);
 
         var refresh = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
@@ -28,7 +30,7 @@ public class TokenService(
             Token = refresh,
             ExpiresAt = DateTime.UtcNow.AddDays(7)
         });
-        
+
         db.SaveChanges();
 
         return (access, refresh);

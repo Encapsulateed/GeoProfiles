@@ -27,7 +27,7 @@ describe('GET /api/v1/auth/me', () => {
     describe('happy path', () => {
         it('should return current user info when valid token provided', async () => {
             // Arrange
-            const token = await generateAccessToken({userId: user.id});
+            const token = await generateAccessToken({userId: user.id, user_name: user.username, email: user.email});
             httpClient.defaults.headers['Authorization'] = `Bearer ${token}`;
 
             // Act
@@ -68,7 +68,7 @@ describe('GET /api/v1/auth/me', () => {
         it('should return 404 if token subject does not exist', async () => {
             // Arrange: token for random user id
             const fakeId = testData.random.uuid();
-            const token = await generateAccessToken({userId: fakeId});
+            const token = await generateAccessToken({userId: fakeId, user_name: user.username, email: user.email});
             httpClient.defaults.headers['Authorization'] = `Bearer ${token}`;
 
             // Act

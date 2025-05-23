@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using GeoProfiles.Application.Auth;
 using GeoProfiles.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -8,7 +9,7 @@ namespace GeoProfiles.Infrastructure.Services;
 
 public interface IJwtTokenService
 {
-    string CreateToken(Guid userId, string username, string[]? roles);
+    string CreateToken(Guid userId, string username, string email, string[]? roles);
 }
 
 public class JwtTokenService : IJwtTokenService
@@ -25,7 +26,6 @@ public class JwtTokenService : IJwtTokenService
         if (string.IsNullOrWhiteSpace(_settings.SigningJwksUri))
         {
             throw new InvalidOperationException("SigningJwksUri must be configured in JwtSettings.");
-
         }
 
         var client = httpFactory.CreateClient();
@@ -37,7 +37,7 @@ public class JwtTokenService : IJwtTokenService
         _key = jwk;
     }
 
-    public string CreateToken(Guid userId, string username, string[]? roles)
+    public string CreateToken(Guid userId, string username, string email, string[]? roles)
     {
         var now = DateTime.UtcNow;
         var notBefore = now.AddSeconds(-1);
@@ -50,8 +50,9 @@ public class JwtTokenService : IJwtTokenService
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new(JwtRegisteredClaimNames.UniqueName, username),
+            new(Claims.UserId, userId.ToString()),
+            new(Claims.UserName, username),
+            new(Claims.Email, email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
