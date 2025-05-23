@@ -60,7 +60,7 @@ async function getPublicKey() {
 async function verifyToken(token) {
     const publicKey = await getPublicKey();
     return jwt.verify(token, publicKey, {
-        issuer: JWT_ISSUER,
+        issuer: jwksUri,
         audience: JWT_AUDIENCE,
         algorithms: ['RS256'],
         clockTolerance: 10
