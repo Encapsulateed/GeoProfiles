@@ -7,31 +7,59 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  setup-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore NuGet packages
+        run: dotnet restore GeoProfiles.sln
+
+  build:
+    needs: setup-dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build solution
+        run: dotnet build GeoProfiles.sln --configuration Release
+
+  test-app-pr:
+    needs: build
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore
-        run: dotnet restore GeoProfiles.sln
-
-      - name: Build
+      - name: Build solution
         run: dotnet build GeoProfiles.sln --configuration Release
-        
+
       - name: Run infra script
         run: |
-              chmod +x scripts/run-ci-infra.sh
-              scripts/run-ci-infra.sh
+          chmod +x scripts/run-ci-infra.sh
+          scripts/run-ci-infra.sh
 
-      - name: Wait for API
+      - name: Wait for API health
         run: |
           for i in {1..60}; do
             code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || true)
@@ -44,7 +72,8 @@ jobs:
           docker compose logs app || true
           exit 1
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: npm
@@ -55,6 +84,13 @@ jobs:
       - name: Run Jest integration tests
         run: npm test
 
+  teardown:
+    needs: test-app-pr
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Down containers
-        if: always()
         run: docker compose down -v
