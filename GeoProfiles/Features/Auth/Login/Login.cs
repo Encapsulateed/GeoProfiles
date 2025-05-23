@@ -11,7 +11,6 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace GeoProfiles.Features.Auth.Login;
 
-
 public class Login(
     GeoProfilesContext db,
     ITokenService tokenService,
@@ -52,7 +51,7 @@ public class Login(
             ));
         }
 
-        var (accessToken, refreshToken) = tokenService.GenerateTokens(user.Id, user.Username, []);
+        var (accessToken, refreshToken) = tokenService.GenerateTokens(user.Id, user.Username, user.Email, []);
 
         var dto = new TokenDto
         {

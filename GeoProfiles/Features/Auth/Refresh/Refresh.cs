@@ -51,8 +51,8 @@ public class Refresh(
 
         stored.IsRevoked = true;
         db.RefreshTokens.Update(stored);
-        
-        var (newAccess, newRefresh) = tokenService.GenerateTokens(user.Id, user.Username, []);
+
+        var (newAccess, newRefresh) = tokenService.GenerateTokens(user.Id, user.Username, user.Email, []);
 
         await db.SaveChangesAsync();
 
