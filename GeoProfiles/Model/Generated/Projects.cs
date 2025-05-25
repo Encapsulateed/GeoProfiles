@@ -20,5 +20,7 @@ public partial class Projects
 
     public virtual ICollection<Isolines> Isolines { get; set; } = new List<Isolines>();
 
+    public virtual ICollection<TerrainProfiles> TerrainProfiles { get; set; } = new List<TerrainProfiles>();
+
     public virtual Users User { get; set; } = null!;
 }
