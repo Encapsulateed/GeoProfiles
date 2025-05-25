@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Swashbuckle.AspNetCore.Filters;
 
-namespace GeoProfiles.Features.Projects
+namespace GeoProfiles.Features.Projects.Create
 {
     using static DataRestrictions.Project;
 

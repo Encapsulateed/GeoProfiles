@@ -1,7 +1,7 @@
 using GeoProfiles.Model.Dto;
 using Swashbuckle.AspNetCore.Filters;
 
-namespace GeoProfiles.Features.Projects;
+namespace GeoProfiles.Features.Projects.Create;
 
 public record ProjectDto
 {
@@ -20,10 +20,14 @@ public sealed class ProjectDtoExample : IExamplesProvider<ProjectDto>
     {
         return new ProjectDto
         {
-            Id = Guid.Parse("06739fee-a7ba-41a9-961c-d16dbd2ba285"),
-            Name = "Demo project",
-            BboxWkt = "POLYGON((10 10, 10 20, 20 20, 20 10, 10 10))",
-            Isolines = Array.Empty<IsolineDto>()
+            Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            Name = "Amsterdam Central Area",
+            BboxWkt = "POLYGON ((4.889 -52.373, 4.899 -52.373, 4.899 -52.363, 4.889 -52.363, 4.889 -52.373))",
+            Isolines =
+            [
+                new IsolineDto(level: 0, geomWkt: "LINESTRING (…)"),
+                new IsolineDto {Level = 1, GeomWkt = "LINESTRING (…)"}
+            ]
         };
     }
 }

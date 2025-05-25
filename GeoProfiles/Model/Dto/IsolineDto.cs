@@ -4,6 +4,16 @@ namespace GeoProfiles.Model.Dto;
 
 public record IsolineDto
 {
+    public IsolineDto()
+    {
+    }
+
+    public IsolineDto(int level, string geomWkt)
+    {
+        Level = level;
+        GeomWkt = geomWkt;
+    }
+
     public int Level { get; init; }
 
     public string GeomWkt { get; init; } = null!;

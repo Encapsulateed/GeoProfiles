@@ -1,11 +1,11 @@
-const {httpClient} = require('../../Testing/fixtures');
-const customExpect = require('../../Testing/customExpect');
+const {httpClient} = require('../../../Testing/fixtures');
+const customExpect = require('../../../Testing/customExpect');
 
 const testData = {
-    ...require('../../Testing/testData'),
-    ...require('../../Testing/UserTestData'),
+    ...require('../../../Testing/testData'),
+    ...require('../../../Testing/UserTestData'),
     ...require('./ProjectTestData'),
-    ...require('./isolineTestData'),
+    ...require('../isolineTestData'),
 };
 
 const {prepareUserInDb} = testData.users;
@@ -16,7 +16,7 @@ const {
 
 const {getIsolinesForProject} = testData.isolines;
 
-const {generateAccessToken} = require('../../Testing/auth');
+const {generateAccessToken} = require('../../../Testing/auth');
 
 async function makeRequest(body) {
     return await httpClient.post('api/v1/projects', body);
