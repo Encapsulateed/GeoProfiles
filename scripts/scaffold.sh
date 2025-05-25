@@ -15,7 +15,6 @@ dotnet ef dbcontext scaffold \
   --context-namespace "GeoProfiles" \
   --no-onconfiguring \
   --no-pluralize \
-  --no-build \
   --force
 
 popd >/dev/null

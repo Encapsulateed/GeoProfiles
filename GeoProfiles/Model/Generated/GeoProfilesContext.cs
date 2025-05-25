@@ -14,6 +14,8 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
 
+    public virtual DbSet<Projects> Projects { get; set; }
+
     public virtual DbSet<RefreshTokens> RefreshTokens { get; set; }
 
     public virtual DbSet<SystemLogs> SystemLogs { get; set; }
@@ -60,6 +62,36 @@ public partial class GeoProfilesContext : DbContext
             entity.Property(e => e.Version)
                 .HasMaxLength(50)
                 .HasColumnName("version");
+        });
+
+        modelBuilder.Entity<Projects>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("projects_pkey");
+
+            entity.ToTable("projects");
+
+            entity.HasIndex(e => e.Bbox, "gist_projects_bbox").HasMethod("gist");
+
+            entity.HasIndex(e => e.UserId, "ix_projects_user_id");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("uuid_generate_v4()")
+                .HasColumnName("id");
+            entity.Property(e => e.Bbox)
+                .HasColumnType("geometry(Polygon,4326)")
+                .HasColumnName("bbox");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Projects)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_projects_users");
         });
 
         modelBuilder.Entity<RefreshTokens>(entity =>

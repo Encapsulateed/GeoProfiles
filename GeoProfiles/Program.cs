@@ -12,11 +12,10 @@ builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 
 // Add Db
-builder.Services.AddDbContext<GeoProfilesContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+builder.Services.AddDbContext<GeoProfilesContext>(options => options.UseNpgsql(
+    builder.Configuration.GetConnectionString("ConnectionStrings:DefaultConnection"),
+    o => o.UseNetTopologySuite()));
+
 // Add logging
 builder.AddSerilogLogging();
 

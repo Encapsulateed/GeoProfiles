@@ -17,5 +17,7 @@ public partial class Users
 
     public DateTime UpdatedAt { get; set; }
 
+    public virtual ICollection<Projects> Projects { get; set; } = new List<Projects>();
+
     public virtual ICollection<RefreshTokens> RefreshTokens { get; set; } = new List<RefreshTokens>();
 }

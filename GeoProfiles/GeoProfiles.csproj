@@ -8,10 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11"/>
+        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -20,19 +20,21 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.0"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
-        <PackageReference Include="Polly" Version="8.5.2"/>
-        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0"/>
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.0" />
+        <PackageReference Include="NetTopologySuite" Version="2.6.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="9.0.0" />
+        <PackageReference Include="Polly" Version="8.5.2" />
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
         <PackageReference Include="Roslynator.Analyzers" Version="4.13.1">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0"/>
-        <PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.3"/>
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.0"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+        <PackageReference Include="Serilog.Sinks.Postgresql.Alternative" Version="4.2.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.3" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -42,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Model\Generated\"/>
+        <Folder Include="Model\Generated\" />
     </ItemGroup>
 
 </Project>
