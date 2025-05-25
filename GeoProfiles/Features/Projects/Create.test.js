@@ -4,7 +4,7 @@ const customExpect = require('../../Testing/customExpect');
 const testData = {
     ...require('../../Testing/testData'),
     ...require('../../Testing/UserTestData'),
-    ...require('./projectTestData'),
+    ...require('./ProjectTestData'),
     ...require('./isolineTestData'),
 };
 
