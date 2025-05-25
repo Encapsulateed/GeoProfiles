@@ -22,6 +22,8 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<SystemLogs> SystemLogs { get; set; }
 
+    public virtual DbSet<TerrainProfiles> TerrainProfiles { get; set; }
+
     public virtual DbSet<Users> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -170,6 +172,40 @@ public partial class GeoProfilesContext : DbContext
             entity.Property(e => e.Message).HasColumnName("message");
             entity.Property(e => e.RaiseDate).HasColumnName("raise_date");
             entity.Property(e => e.RequestId).HasColumnName("request_id");
+        });
+
+        modelBuilder.Entity<TerrainProfiles>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("terrain_profiles_pkey");
+
+            entity.ToTable("terrain_profiles");
+
+            entity.HasIndex(e => new { e.StartPt, e.EndPt }, "gist_terrain_profiles_geom").HasMethod("gist");
+
+            entity.HasIndex(e => e.ProjectId, "ix_terrain_profiles_project_id");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("uuid_generate_v4()")
+                .HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EndPt)
+                .HasColumnType("geometry(Point,4326)")
+                .HasColumnName("end_pt");
+            entity.Property(e => e.LengthM).HasColumnName("length_m");
+            entity.Property(e => e.PngData).HasColumnName("png_data");
+            entity.Property(e => e.ProjectId).HasColumnName("project_id");
+            entity.Property(e => e.StartPt)
+                .HasColumnType("geometry(Point,4326)")
+                .HasColumnName("start_pt");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.TerrainProfiles)
+                .HasForeignKey(d => d.ProjectId)
+                .HasConstraintName("terrain_profiles_project_id_fkey");
         });
 
         modelBuilder.Entity<Users>(entity =>
