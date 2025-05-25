@@ -17,7 +17,7 @@
    chmod +x scripts/run-infra.sh
     ./scripts/run-infra.sh
     ```
-   Эта команда поднимет `Postgres` на `localhost:5430`, `MockServer` на `localhost:1080`. Выполнит все миграции в бд, подтянет нужные зависимости и поднимет тестовый бакет для хранилища S3.
+   Эта команда поднимет `Postgres` на `localhost:5430`, `MockServer` на `localhost:1080`. Выполнит все миграции в бд.
 2. После этого можно запустить локальный Debug в IDE
 
 ## Тесты
