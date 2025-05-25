@@ -1,6 +1,6 @@
 using Swashbuckle.AspNetCore.Filters;
 
-namespace GeoProfiles.Features.Projects;
+namespace GeoProfiles.Features.Projects.Create;
 
 public record CreateProjectRequest
 {

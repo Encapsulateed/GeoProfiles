@@ -7,4 +7,6 @@ public abstract class Errors
     public record UserUnauthorized(string Message);
 
     public record UserNotFound(string Message);
+
+    public record ProjectNotFound(string Message);
 }

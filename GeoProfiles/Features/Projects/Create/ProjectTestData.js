@@ -1,9 +1,9 @@
-const {db} = require('../../Testing/fixtures');
+const {db} = require('../../../Testing/fixtures');
 const {
     convertObjectPropertiesToSnakeCase,
     convertObjectPropertiesToCamelCase,
-} = require('../../Testing/utils');
-const testData = require('../../Testing/testData');
+} = require('../../../Testing/utils');
+const testData = require('../../../Testing/testData');
 
 /**
  * Генерирует WKT-квадрат 0.002° × 0.002° вокруг случайной точки
@@ -22,12 +22,10 @@ function randomBboxWkt() {
 }
 
 /**
- * Создаёт проект + (опционально) изолинии прямо в тестовой БД.
- * Возвращает объект проекта в camelCase-форме.
- *
- * @param {object}  [init]                – поля проекта, которые нужно переопределить
- * @param {Array<{level:number, geomWkt:string}>} [isolines] – список изолиний
- * @returns {Promise<object>}             – созданный проект (camelCase)
+ * Подготавливает проект в БД, при желании — сразу изолинии.
+ * @param {object} init - переопределяемые поля проекта
+ * @param {Array<{level:number, geomWkt:string}>} isolines
+ * @returns {Promise<object>}     // camelCase-объект проекта
  */
 async function prepareProjectInDb(init = {}, isolines = []) {
     const project = {
@@ -38,33 +36,25 @@ async function prepareProjectInDb(init = {}, isolines = []) {
     };
 
     const snake = convertObjectPropertiesToSnakeCase(project);
-    const bboxWkt = snake.bbox_wkt;
-    delete snake.bbox_wkt;
+    const {bboxWkt, ...rest} = snake;
 
-    await db('projects').insert({
-        ...snake,
-        bbox: db.raw('ST_GeomFromText(?, 4326)', [bboxWkt]),
-    });
-
-    if (isolines.length) {
-        const rows = isolines.map(({level, geomWkt}) => {
-            const camel = {
-                id: testData.random.uuid(),
-                projectId: project.id,
-                level,
-                geomWkt,
-            };
-            const snakeIso = convertObjectPropertiesToSnakeCase(camel);
-            const geomWktSn = snakeIso.geom_wkt;
-            delete snakeIso.geom_wkt;
-
-            return {
-                ...snakeIso,
-                geom: db.raw('ST_GeomFromText(?, 4326)', [geomWktSn]),
-            };
+    await db('projects')
+        .insert({
+            ...rest,
+            bbox: db.raw('ST_GeomFromText(?, 4326)', [bboxWkt]),
         });
 
-        await db('isolines').insert(rows);
+    if (isolines.length > 0) {
+        await db('isolines').insert(
+            isolines.map((l) =>
+                convertObjectPropertiesToSnakeCase({
+                    id: testData.random.uuid(),
+                    projectId: project.id,
+                    level: l.level,
+                    geom: db.raw('ST_GeomFromText(?, 4326)', [l.geomWkt]),
+                }),
+            ),
+        );
     }
 
     return project;

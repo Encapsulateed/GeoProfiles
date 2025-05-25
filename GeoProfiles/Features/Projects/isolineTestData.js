@@ -5,21 +5,37 @@ const {
 } = require('../../Testing/utils');
 const testData = require('../../Testing/testData');
 
+/**
+ * Вставляет изолинию в БД.
+ * Если WKT-геометрия – LineString/MultiLineString, она автоматически
+ * превращается в Polygon через ST_Envelope (bounding-box).
+ *
+ * @param {string}  projectId
+ * @param {object}  [init]
+ * @param {string}  [init.geomWkt]  – в любом случае SRID     = 4326
+ * @param {number}  [init.level=0]
+ */
 async function prepareIsolineInDb(projectId, init = {}) {
     const isoline = {
         id: init.id ?? testData.random.uuid(),
         projectId,
         level: init.level ?? 0,
         geomWkt: init.geomWkt
-            ?? 'POLYGON((-0.001 -0.001,0.001 -0.001,0.001 0.001,-0.001 0.001,-0.001 -0.001))',
+            ?? 'POLYGON((0 0,0.002 0,0.002 0.002,0 0.002,0 0))',
     };
 
     const snake = convertObjectPropertiesToSnakeCase(isoline);
-    const {geomWkt, ...rest} = snake;
+    const geomWkt = snake.geom_wkt;
+    delete snake.geom_wkt;
 
+    const wktUpper = geomWkt.trim().toUpperCase();
+    const geomExpression = wktUpper.startsWith('POLYGON')
+        ? db.raw('ST_GeomFromText(?, 4326)', [geomWkt])
+        : db.raw('ST_Envelope(ST_GeomFromText(?, 4326))', [geomWkt]);
+    
     await db('isolines').insert({
-        ...rest,
-        geom: db.raw('ST_GeomFromText(?, 4326)', [geomWkt]),
+        ...snake,
+        geom: geomExpression,
     });
 
     return isoline;
