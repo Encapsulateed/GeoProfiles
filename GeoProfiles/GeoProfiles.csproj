@@ -46,6 +46,7 @@
     <ItemGroup>
         <Folder Include="Features\Users\" />
         <Folder Include="Model\Generated\" />
+        <Folder Include="Model\Structures\" />
     </ItemGroup>
 
 </Project>

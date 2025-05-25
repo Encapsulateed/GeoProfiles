@@ -1,5 +1,4 @@
 using System.Net.Mime;
-using System.Security.Claims;
 using FluentValidation;
 using GeoProfiles.Application.Auth;
 using GeoProfiles.Infrastructure;
@@ -8,109 +7,118 @@ using GeoProfiles.Model.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using Swashbuckle.AspNetCore.Filters;
 
-namespace GeoProfiles.Features.Projects;
-
-using static DataRestrictions.Project;
-
-public class Create(
-    GeoProfilesContext db,
-    IIsolineGeneratorService isolineGenerator,
-    ILogger<Create> logger)
-    : ControllerBase
+namespace GeoProfiles.Features.Projects
 {
-    [HttpPost("api/v1/projects")]
-    [Authorize]
-    [Produces(MediaTypeNames.Application.Json)]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [SwaggerRequestExample(typeof(CreateProjectRequest), typeof(ProjectCreateRequestExample))]
-    [SwaggerResponseExample(StatusCodes.Status201Created, typeof(ProjectDtoExample))]
-    public async Task<IActionResult> Action(
-        [FromBody] CreateProjectRequest request,
-        CancellationToken cancellationToken = default)
+    using static DataRestrictions.Project;
+
+    public class Create(
+        GeoProfilesContext db,
+        IIsolineGeneratorService isolineGenerator,
+        ILogger<Create> logger) : ControllerBase
     {
-        logger.LogInformation("Creating project");
-
-        // ReSharper disable once MethodHasAsyncOverloadWithCancellation
-        new Validator().ValidateAndThrow(request);
-
-        var userIdClaim = User.Claims
-            .FirstOrDefault(c => c.Type == Claims.UserId)?.Value;
-
-        if (userIdClaim is null || !Guid.TryParse(userIdClaim, out var userId))
+        [HttpPost("api/v1/projects")]
+        [Authorize]
+        [Produces(MediaTypeNames.Application.Json)]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [SwaggerRequestExample(typeof(CreateProjectRequest), typeof(ProjectCreateRequestExample))]
+        [SwaggerResponseExample(StatusCodes.Status201Created, typeof(ProjectDtoExample))]
+        public async Task<IActionResult> Action(
+            [FromBody] CreateProjectRequest request,
+            CancellationToken cancellationToken = default)
         {
-            logger.LogInformation("User is not authorized to create a project");
+            logger.LogInformation("Creating project");
+            new Validator().ValidateAndThrow(request);
 
-            return Unauthorized(new Errors.UserUnauthorized("User is not authorized to create a project"));
-        }
+            var userIdStr = User.Claims.FirstOrDefault(c => c.Type == Claims.UserId)?.Value;
+            if (userIdStr is null || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(new Errors.UserUnauthorized("User is not authorized"));
 
-        var user = await db.Users
-            .AsNoTracking()
-            .SingleOrDefaultAsync(u => u.Id == userId, cancellationToken: cancellationToken);
+            if (!await db.Users.AsNoTracking()
+                    .AnyAsync(u => u.Id == userId, cancellationToken))
+                return NotFound(new Errors.UserNotFound("User was not found"));
 
-        if (user is null)
-        {
-            logger.LogInformation("User was not found");
+            var bboxInput = new BoundingBox(-0.1, -0.1, 0.1, 0.1);
 
-            return NotFound(new Errors.UserNotFound("User was not found"));
-        }
+            var isolinePolygons = (await isolineGenerator.GenerateAsync(
+                    bboxInput))
+                .ToList();
 
-        var (bbox, isolines) = await isolineGenerator.GenerateAsync(5, cancellationToken);
-
-
-        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
-
-        var projectEntity = new Model.Projects
-        {
-            UserId = user.Id,
-            Name = request.Name,
-            Bbox = bbox
-        };
-
-        db.Add(projectEntity);
-        await db.SaveChangesAsync(cancellationToken);
-
-        if (isolines.Count > 0)
-        {
-            db.Isolines.AddRange(isolines.Select(i => new Model.Isolines
+            if (isolinePolygons.Count == 0)
             {
-                ProjectId = projectEntity.Id,
-                Level = i.Level,
-                Geom = i.Geometry
-            }));
-            await db.SaveChangesAsync(cancellationToken);
+                logger.LogError("Isoline generator produced 0 features");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            var env = new Envelope();
+            foreach (var poly in isolinePolygons)
+            {
+                env.ExpandToInclude(poly.EnvelopeInternal);
+                poly.SRID = 4326;
+            }
+
+            var gf = isolinePolygons[0].Factory;
+            var bboxGeomCandidate = gf.ToGeometry(env);
+            var bboxGeom = (Polygon) (bboxGeomCandidate is Polygon p ? p : bboxGeomCandidate.Buffer(1e-6));
+            bboxGeom.SRID = 4326;
+
+            await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var project = new Model.Projects
+                {
+                    UserId = userId,
+                    Name = request.Name,
+                    Bbox = bboxGeom
+                };
+                db.Projects.Add(project);
+                await db.SaveChangesAsync(cancellationToken);
+
+                db.Isolines.AddRange(
+                    isolinePolygons.Select((poly, idx) => new Model.Isolines
+                    {
+                        ProjectId = project.Id,
+                        Level = idx,
+                        Geom = poly
+                    }));
+                await db.SaveChangesAsync(cancellationToken);
+                await tx.CommitAsync(cancellationToken);
+
+                var dto = new ProjectDto
+                {
+                    Id = project.Id,
+                    Name = project.Name,
+                    BboxWkt = project.Bbox.AsText(),
+                    Isolines = isolinePolygons.Select((poly, idx) => new IsolineDto
+                    {
+                        Level = idx,
+                        GeomWkt = poly.AsText()
+                    }).ToList()
+                };
+
+                logger.LogInformation("Successfully created project {ProjectId}", project.Id);
+                return StatusCode(StatusCodes.Status201Created, dto);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to create project");
+                await tx.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
-        await tx.CommitAsync(cancellationToken);
-
-        var dto = new ProjectDto
+        private sealed class Validator : AbstractValidator<CreateProjectRequest>
         {
-            Id = projectEntity.Id,
-            Name = projectEntity.Name,
-            BboxWkt = projectEntity.Bbox.AsText(),
-            Isolines = isolines.Select(i => new IsolineDto
-                {
-                    Level = i.Level,
-                    GeomWkt = i.Geometry.AsText()
-                })
-                .ToList()
-        };
-
-        logger.LogInformation("Successfully created project");
-
-        return StatusCode(StatusCodes.Status201Created, dto);
-    }
-
-    private class Validator : AbstractValidator<CreateProjectRequest>
-    {
-        public Validator()
-        {
-            RuleFor(x => x.Name)
-                .NotEmpty()
-                .Length(NameMinLength, NameMaxLength);
+            public Validator()
+            {
+                RuleFor(x => x.Name)
+                    .NotEmpty()
+                    .Length(NameMinLength, NameMaxLength);
+            }
         }
     }
 }

@@ -8,6 +8,6 @@ public static class IsolineModule
         this IServiceCollection services)
     {
         return services.AddTransient<IIsolineGeneratorService,
-            MockIsolineGeneratorService>();
+            IsolineGeneratorService>();
     }
 }
