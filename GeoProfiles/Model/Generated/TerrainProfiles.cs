@@ -16,8 +16,6 @@ public partial class TerrainProfiles
 
     public decimal LengthM { get; set; }
 
-    public byte[] PngData { get; set; } = null!;
-
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

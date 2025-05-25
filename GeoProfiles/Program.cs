@@ -12,7 +12,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
+
 builder.Services.AddMockElevationProvider(builder.Configuration);
+builder.Services.RegisterProfiles();
 
 // Add Db
 builder.Services.AddDbContext<GeoProfilesContext>(options =>
