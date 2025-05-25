@@ -1,6 +1,6 @@
 using Swashbuckle.AspNetCore.Filters;
 
-namespace GeoProfiles.Features.Auth.Register;
+namespace GeoProfiles.Model.Dto;
 
 public record UserDataRequest
 {

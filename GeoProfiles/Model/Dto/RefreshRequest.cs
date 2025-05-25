@@ -1,6 +1,6 @@
 using Swashbuckle.AspNetCore.Filters;
 
-namespace GeoProfiles.Features.JWT;
+namespace GeoProfiles.Model.Dto;
 
 public record RefreshRequest
 {

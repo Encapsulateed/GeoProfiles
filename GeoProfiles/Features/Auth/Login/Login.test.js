@@ -1,7 +1,7 @@
 const {httpClient} = require('../../../Testing/fixtures');
 const customExpect = require('../../../Testing/customExpect');
 const testData = require('../../../Testing/testData');
-const {users} = require('../../Users/UserTestData');
+const {users} = require('../../../Testing/UserTestData')
 const {verifyToken} = require('../../../Testing/auth')
 
 async function makeLoginRequest(request) {
