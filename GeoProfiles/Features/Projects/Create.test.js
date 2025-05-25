@@ -64,7 +64,7 @@ describe('POST /api/v1/projects', () => {
                 expect(typeof iso.geomWkt ?? iso.geom).toBe('string');
             }
 
-            // ---------- Assert DB ----------
+            // Assert DB 
             const projectFromDb = await getProjectFromDb(response.data.id);
             expect(projectFromDb).not.toBeNull();
             expect(projectFromDb.name).toBe('My first project');
