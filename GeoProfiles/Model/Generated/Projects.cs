@@ -18,5 +18,7 @@ public partial class Projects
 
     public DateTime UpdatedAt { get; set; }
 
+    public virtual ICollection<Isolines> Isolines { get; set; } = new List<Isolines>();
+
     public virtual Users User { get; set; } = null!;
 }
