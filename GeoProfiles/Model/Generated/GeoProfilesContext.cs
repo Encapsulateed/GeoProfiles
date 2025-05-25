@@ -12,6 +12,8 @@ public partial class GeoProfilesContext : DbContext
     {
     }
 
+    public virtual DbSet<ElevationCache> ElevationCache { get; set; }
+
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
 
     public virtual DbSet<Isolines> Isolines { get; set; }
@@ -32,6 +34,23 @@ public partial class GeoProfilesContext : DbContext
             .HasPostgresExtension("postgis")
             .HasPostgresExtension("uuid-ossp")
             .HasPostgresExtension("topology", "postgis_topology");
+
+        modelBuilder.Entity<ElevationCache>(entity =>
+        {
+            entity.HasKey(e => e.Pt).HasName("elevation_cache_pkey");
+
+            entity.ToTable("elevation_cache");
+
+            entity.HasIndex(e => e.Pt, "gist_elev_cache_pt").HasMethod("gist");
+
+            entity.Property(e => e.Pt)
+                .HasColumnType("geometry(Point,4326)")
+                .HasColumnName("pt");
+            entity.Property(e => e.ElevM).HasColumnName("elev_m");
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("updated_at");
+        });
 
         modelBuilder.Entity<FlywaySchemaHistory>(entity =>
         {
