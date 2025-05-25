@@ -213,7 +213,6 @@ public partial class GeoProfilesContext : DbContext
                 .HasColumnType("geometry(Point,4326)")
                 .HasColumnName("end_pt");
             entity.Property(e => e.LengthM).HasColumnName("length_m");
-            entity.Property(e => e.PngData).HasColumnName("png_data");
             entity.Property(e => e.ProjectId).HasColumnName("project_id");
             entity.Property(e => e.StartPt)
                 .HasColumnType("geometry(Point,4326)")
