@@ -13,7 +13,7 @@ builder.Services.AddHealthChecks();
 
 // Add Db
 builder.Services.AddDbContext<GeoProfilesContext>(options => options.UseNpgsql(
-    builder.Configuration.GetConnectionString("ConnectionStrings:DefaultConnection"),
+    builder.Configuration.GetConnectionString("DefaultConnection"),
     o => o.UseNetTopologySuite()));
 
 // Add logging
