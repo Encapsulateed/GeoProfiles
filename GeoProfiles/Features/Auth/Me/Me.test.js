@@ -1,7 +1,7 @@
 const {httpClient} = require('../../../Testing/fixtures');
 const testData = {
     ...require('../../../Testing/testData'),
-    ...require('../../Users/UserTestData')
+    ...require('../../../Testing/UserTestData')
 };
 const {prepareUserInDb} = testData.users;
 const {generateAccessToken} = require('../../../Testing/auth');

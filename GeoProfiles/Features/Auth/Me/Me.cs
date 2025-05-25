@@ -1,8 +1,8 @@
 using System.Net.Mime;
 using GeoProfiles.Application.Auth;
-using GeoProfiles.Features.Users;
 using GeoProfiles.Infrastructure;
 using GeoProfiles.Infrastructure.Examples;
+using GeoProfiles.Model.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

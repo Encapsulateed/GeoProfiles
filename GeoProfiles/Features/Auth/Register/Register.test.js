@@ -2,7 +2,7 @@ const {httpClient} = require('../../../Testing/fixtures');
 const customExpect = require('../../../Testing/customExpect');
 const testData = {
     ...require('../../../Testing/testData'),
-    ...require('../../Users/UserTestData')
+    ...require('../../../Testing/UserTestData')
 };
 
 const {prepareUserInDb, getUserFromDb} = testData.users;

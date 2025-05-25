@@ -1,10 +1,10 @@
-const {db} = require("../../Testing/fixtures");
+const {db} = require("./fixtures");
 const {
     convertObjectPropertiesToSnakeCase,
     convertObjectPropertiesToCamelCase
-} = require("../../Testing/utils");
-const testData = require("../../Testing/testData");
-
+} = require("./utils");
+const testData = require("./testData");
+ 
 async function prepareUserInDb(init) {
     const user = {
         id: init.id ?? testData.random.uuid(),

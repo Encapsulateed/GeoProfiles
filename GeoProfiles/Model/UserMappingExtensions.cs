@@ -1,4 +1,6 @@
-namespace GeoProfiles.Features.Users;
+using GeoProfiles.Model.Dto;
+
+namespace GeoProfiles.Model;
 
 public static class UserMappingExtensions
 {

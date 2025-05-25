@@ -2,6 +2,8 @@ using GeoProfiles;
 using GeoProfiles.Infrastructure.Extensions;
 using GeoProfiles.Infrastructure.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using GeoProfiles.Infrastructure.Modules;
+using GeoProfiles.Infrastructure.Services;
 using static Microsoft.AspNetCore.Builder.WebApplication;
 
 var builder = CreateBuilder(args);
@@ -28,6 +30,8 @@ builder.AddSerilogLogging();
 builder.Services.AddSwaggerDocumentation();
 
 builder.Services.AddJwtAuthentication(builder.Configuration);
+
+builder.Services.RegisterIsoline();
 
 var app = builder.Build();
 

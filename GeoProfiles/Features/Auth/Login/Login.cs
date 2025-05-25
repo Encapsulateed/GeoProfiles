@@ -1,10 +1,10 @@
 using System.Net.Mime;
 using FluentValidation;
 using GeoProfiles.Features.Auth.Register;
-using GeoProfiles.Features.JWT;
 using GeoProfiles.Infrastructure;
 using GeoProfiles.Infrastructure.Examples;
 using GeoProfiles.Infrastructure.Services;
+using GeoProfiles.Model.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Filters;
