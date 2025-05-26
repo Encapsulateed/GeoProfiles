@@ -90,6 +90,8 @@ public class TerrainProfileService(
                 new ProfilePoint(dist, elev))
             .ToList();
 
+
+        await db.SaveChangesAsync();
         var entity = new TerrainProfiles
         {
             ProjectId = projectId,
@@ -100,6 +102,19 @@ public class TerrainProfileService(
         };
 
         db.TerrainProfiles.Add(entity);
+        await db.SaveChangesAsync(ct);
+
+        for (var i = 0; i < points.Count; i++)
+        {
+            db.TerrainProfilePoints.Add(new Model.TerrainProfilePoints
+            {
+                ProfileId = entity.Id,
+                Seq = i,
+                DistM = (decimal) points[i].Distance,
+                ElevM = (decimal) points[i].Elevation
+            });
+        }
+
         await db.SaveChangesAsync(ct);
 
         return new TerrainProfileData

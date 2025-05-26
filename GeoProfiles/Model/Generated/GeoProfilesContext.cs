@@ -24,6 +24,8 @@ public partial class GeoProfilesContext : DbContext
 
     public virtual DbSet<SystemLogs> SystemLogs { get; set; }
 
+    public virtual DbSet<TerrainProfilePoints> TerrainProfilePoints { get; set; }
+
     public virtual DbSet<TerrainProfiles> TerrainProfiles { get; set; }
 
     public virtual DbSet<Users> Users { get; set; }
@@ -191,6 +193,24 @@ public partial class GeoProfilesContext : DbContext
             entity.Property(e => e.Message).HasColumnName("message");
             entity.Property(e => e.RaiseDate).HasColumnName("raise_date");
             entity.Property(e => e.RequestId).HasColumnName("request_id");
+        });
+
+        modelBuilder.Entity<TerrainProfilePoints>(entity =>
+        {
+            entity.HasKey(e => new { e.ProfileId, e.Seq }).HasName("terrain_profile_points_pkey");
+
+            entity.ToTable("terrain_profile_points");
+
+            entity.HasIndex(e => e.ProfileId, "ix_tpp_profile_id");
+
+            entity.Property(e => e.ProfileId).HasColumnName("profile_id");
+            entity.Property(e => e.Seq).HasColumnName("seq");
+            entity.Property(e => e.DistM).HasColumnName("dist_m");
+            entity.Property(e => e.ElevM).HasColumnName("elev_m");
+
+            entity.HasOne(d => d.Profile).WithMany(p => p.TerrainProfilePoints)
+                .HasForeignKey(d => d.ProfileId)
+                .HasConstraintName("terrain_profile_points_profile_id_fkey");
         });
 
         modelBuilder.Entity<TerrainProfiles>(entity =>
