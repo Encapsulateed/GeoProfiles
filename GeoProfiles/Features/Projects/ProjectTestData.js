@@ -125,5 +125,6 @@ module.exports = {
         getProjectFromDb,
         getProjectListFromDb,
         getIsolinesFromDb,
+        randomBboxWkt
     },
 };

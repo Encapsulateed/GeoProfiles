@@ -17,7 +17,7 @@ public class Get(
     [HttpGet("api/v1/projects/{id:guid}")]
     [Authorize]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [SwaggerResponseExample(StatusCodes.Status200OK, typeof(ProjectDtoExample))]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(ErrorResponse))]
