@@ -1,4 +1,3 @@
-// __tests__/features/profiles/list/listProfile.test.js
 
 const { httpClient }          = require('../../../Testing/fixtures');
 const customExpect            = require('../../../Testing/customExpect');
