@@ -9,4 +9,6 @@ public abstract class Errors
     public record UserNotFound(string Message);
 
     public record ProjectNotFound(string Message);
+
+    public record ResourceNotFound(string Message);
 }
