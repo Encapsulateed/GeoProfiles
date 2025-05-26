@@ -43,7 +43,7 @@ public class TerrainProfileService(
             // TODO доделать догенерацию изолиний
             // var expanded = project.Bbox.Buffer(samplingMeters * 5);
             // await _isolSvc.GenerateMore(projectId, expanded);
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         var totalDist = start.Distance(end);
