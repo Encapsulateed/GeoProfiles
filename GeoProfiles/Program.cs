@@ -36,7 +36,21 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.RegisterIsoline();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ApiCors",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
+
+app.UseCors("ApiCors");
 
 // Add authentication
 app.UseJwtAuthentication();
