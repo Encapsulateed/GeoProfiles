@@ -23,10 +23,10 @@ const {
 const {generateAccessToken} = require('../../../Testing/auth');
 
 async function makeRequest(projectId) {
-    return await httpClient.get(`api/v1/projects/${projectId}`);
+    return await httpClient.get(`api/v1/project/${projectId}`);
 }
 
-describe('GET /api/v1/projects/:id', () => {
+describe('GET /api/v1/project/:id', () => {
     let owner;
     let stranger;
     let project;

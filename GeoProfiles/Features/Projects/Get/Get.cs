@@ -14,10 +14,10 @@ public class Get(
     GeoProfilesContext db,
     ILogger<Get> logger) : ControllerBase
 {
-    [HttpGet("api/v1/projects/{id:guid}")]
+    [HttpGet("api/v1/project/{id:guid}")]
     [Authorize]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProjectDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     [SwaggerResponseExample(StatusCodes.Status200OK, typeof(ProjectDtoExample))]
     [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(ErrorResponse))]
