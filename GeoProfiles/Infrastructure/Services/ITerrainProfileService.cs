@@ -1,9 +1,12 @@
 using GeoProfiles.Model;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.LinearReferencing;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
 
 namespace GeoProfiles.Infrastructure.Services;
 
-public record ProfilePoint(double Distance, double Elevation);
+public readonly record struct ProfilePoint(double Distance, double Elevation);
 
 public class TerrainProfileData
 {
@@ -18,7 +21,7 @@ public interface ITerrainProfileService
         Point start,
         Point end,
         Guid projectId,
-        double samplingMeters = 10.0,
+        double samplingMeters = 10,
         CancellationToken ct = default);
 }
 
@@ -28,93 +31,110 @@ public class TerrainProfileService(
     IIsolineGeneratorService isolSvc)
     : ITerrainProfileService
 {
+    private static readonly GeographicCoordinateSystem Wgs84 = GeographicCoordinateSystem.WGS84;
+    private static readonly ProjectedCoordinateSystem WebMercatorCS = ProjectedCoordinateSystem.WebMercator;
+
+    private static readonly MathTransform ToMerc =
+        new CoordinateTransformationFactory()
+            .CreateFromCoordinateSystems(Wgs84, WebMercatorCS).MathTransform;
+
+    private static readonly MathTransform ToWgs =
+        new CoordinateTransformationFactory()
+            .CreateFromCoordinateSystems(WebMercatorCS, Wgs84).MathTransform;
+
+    private static Point ToMercator(Point p)
+    {
+        var c = ToMerc.Transform([p.X, p.Y]);
+        return new Point(c[0], c[1]) {SRID = 3857};
+    }
+
+    private const double DefaultSampleM = 10;
+    private const int MaxRawPoints = 20_000;
+
     public async Task<TerrainProfileData> BuildProfileAsync(
         Point start,
         Point end,
         Guid projectId,
-        double samplingMeters = 10.0,
+        double samplingMeters = DefaultSampleM,
         CancellationToken ct = default)
     {
+        const int outN = 800;
+        
         var project = await db.Projects.FindAsync([projectId], ct)
                       ?? throw new KeyNotFoundException("Project not found");
 
         if (!project.Bbox.Contains(start) || !project.Bbox.Contains(end))
         {
-            // TODO доделать догенерацию изолиний
-            // var expanded = project.Bbox.Buffer(samplingMeters * 5);
-            // await _isolSvc.GenerateMore(projectId, expanded);
-            //throw new NotImplementedException();
+            // TODO: при необходимости сгенерировать новые изолинии
         }
 
-        var totalDist = start.Distance(end);
-        var n0 = (int) Math.Ceiling(totalDist / samplingMeters);
-        var rawPts = new List<Point>(n0 + 1);
-        for (var i = 0; i <= n0; i++)
+        var startM = ToMercator(start);
+        var endM = ToMercator(end);
+        var totalDistM = startM.Distance(endM);
+
+        var lineM = new LineString([startM.Coordinate, endM.Coordinate]) {SRID = 3857};
+        var lineRef = new LengthIndexedLine(lineM);
+
+        var nSamples = Math.Clamp(outN * 2, 2, MaxRawPoints);
+
+        var rawPts = new Point[nSamples + 1];
+        for (int i = 0; i <= nSamples; i++)
         {
-            var t = (double) i / n0;
-            rawPts.Add(new Point(
-                    start.X + (end.X - start.X) * t,
-                    start.Y + (end.Y - start.Y) * t)
-                {SRID = 4326});
+            var frac = (double) i / nSamples;
+            var ptM = lineRef.ExtractPoint(totalDistM * frac);
+            var cWgs = ToWgs.Transform(new[] {ptM.X, ptM.Y});
+            rawPts[i] = new Point(cWgs[0], cWgs[1]) {SRID = 4326};
         }
 
-        var x0 = new double[rawPts.Count];
-        var y0 = new double[rawPts.Count];
+        var heights = new double[rawPts.Length];
+        for (var i = 0; i < rawPts.Length; i++)
+            heights[i] = (double) await elevProv.GetElevationAsync(rawPts[i], ct);
+
+        var x = new double[rawPts.Length]; // дистанция
+        var y = heights; // высоты
+
         double cum = 0;
-        var prev = rawPts[0];
-        for (var i = 0; i < rawPts.Count; i++)
+        for (int i = 1; i < rawPts.Length; i++)
         {
-            var pt = rawPts[i];
-            var h = await elevProv.GetElevationAsync(pt, ct);
-            if (i > 0) cum += prev.Distance(pt);
-            x0[i] = cum;
-            y0[i] = (double) h;
-            prev = pt;
+            cum += ToMercator(rawPts[i - 1]).Distance(ToMercator(rawPts[i]));
+            x[i] = cum;
         }
 
-        var interpolator = CubicSpline.CreatePchip(x0, y0);
+        var spline = CubicSpline.CreatePchip(x, y);
 
-        const int n = 800;
+        var xs = new double[outN];
+        var ys = new double[outN];
 
-        var xs = new double[n];
-        var ys = new double[n];
-        for (var i = 0; i < n; i++)
+        for (int i = 0; i < outN; i++)
         {
-            var x = totalDist * i / (n - 1);
-            xs[i] = x;
-            ys[i] = interpolator.Interpolate(x);
+            var xx = totalDistM * i / (outN - 1);
+            xs[i] = xx;
+            ys[i] = spline.Interpolate(xx);
         }
 
-        var points = xs
-            .Zip(ys, (dist, elev) =>
-                new ProfilePoint(dist, elev))
-            .ToList();
+        SplineSmooth(xs, ys, 1000);
 
+        var points = xs.Zip(ys, (d, h) => new ProfilePoint(d, h)).ToList();
 
-        await db.SaveChangesAsync();
         var entity = new TerrainProfiles
         {
             ProjectId = projectId,
             StartPt = start,
             EndPt = end,
-            LengthM = (decimal) totalDist,
+            LengthM = (decimal) totalDistM,
             CreatedAt = DateTime.UtcNow
         };
-
         db.TerrainProfiles.Add(entity);
         await db.SaveChangesAsync(ct);
 
-        for (var i = 0; i < points.Count; i++)
-        {
-            db.TerrainProfilePoints.Add(new Model.TerrainProfilePoints
+        db.TerrainProfilePoints.AddRange(
+            points.Select((p, i) => new TerrainProfilePoints
             {
                 ProfileId = entity.Id,
                 Seq = i,
-                DistM = (decimal) points[i].Distance,
-                ElevM = (decimal) points[i].Elevation
-            });
-        }
-
+                DistM = (decimal) p.Distance,
+                ElevM = (decimal) p.Elevation
+            }));
         await db.SaveChangesAsync(ct);
 
         return new TerrainProfileData
@@ -123,5 +143,28 @@ public class TerrainProfileService(
             LengthM = entity.LengthM,
             Points = points
         };
+    }
+
+    static void SplineSmooth(double[] xs, double[] ys, double minStepM = 40)
+    {
+        var xKnots = new List<double> {xs[0]};
+        var yKnots = new List<double> {ys[0]};
+
+        for (int i = 1; i < xs.Length - 1; i++)
+        {
+            if (xs[i] - xKnots[^1] >= minStepM)
+            {
+                xKnots.Add(xs[i]);
+                yKnots.Add(ys[i]);
+            }
+        }
+
+        xKnots.Add(xs[^1]);
+        yKnots.Add(ys[^1]);
+
+        var spline = CubicSpline.CreatePchip(xKnots.ToArray(), yKnots.ToArray());
+
+        for (int i = 0; i < xs.Length; i++)
+            ys[i] = spline.Interpolate(xs[i]);
     }
 }
