@@ -14,7 +14,7 @@ public static class ElevationExtensions
             .ValidateDataAnnotations();
 
         services
-            .AddTransient<MockElevationProvider>();
+            .AddTransient<IElevationProvider,MockElevationProvider>();
 
         return services;
     }

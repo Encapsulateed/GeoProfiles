@@ -10,7 +10,7 @@ public sealed class IsolineGeneratorService : IIsolineGeneratorService
     private static readonly GeometryFactory Gf = new(new PrecisionModel(), 4326,
         CoordinateArraySequenceFactory.Instance);
 
-    public Task<IEnumerable<Polygon>> GenerateAsync(BoundingBox bbox, int levels = 5, Guid? seed = null)
+    public Task<IEnumerable<Polygon>> GenerateAsync(BoundingBox bbox, int levels = 15, Guid? seed = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(levels, 2);
 
@@ -124,5 +124,5 @@ public readonly record struct BoundingBox(double MinX, double MinY, double MaxX,
 
 public interface IIsolineGeneratorService
 {
-    Task<IEnumerable<Polygon>> GenerateAsync(BoundingBox bbox, int levels = 5, Guid? seed = null);
+    Task<IEnumerable<Polygon>> GenerateAsync(BoundingBox bbox, int levels = 15, Guid? seed = null);
 }
