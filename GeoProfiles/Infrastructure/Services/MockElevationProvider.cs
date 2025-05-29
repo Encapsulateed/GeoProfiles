@@ -14,7 +14,7 @@ namespace GeoProfiles.Infrastructure.Services
     public class MockDemOptions
     {
         public double StepHeight { get; set; } = 50;
-        public double JitterFactor { get; set; } = 0.0;
+        public double JitterFactor { get; set; } = 0.1;
     }
 
     public interface IElevationProvider
@@ -54,7 +54,7 @@ namespace GeoProfiles.Infrastructure.Services
             var cand = _tree.Query(pt.EnvelopeInternal);
 
             var inner = cand
-                .Where(c => c.Poly.Covers(pt)) 
+                .Where(c => c.Poly.Contains(pt)) 
                 .OrderByDescending(c => c.Level)
                 .FirstOrDefault();
 

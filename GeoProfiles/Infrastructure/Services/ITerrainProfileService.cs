@@ -39,10 +39,12 @@ namespace GeoProfiles.Infrastructure.Services
 
         private static readonly GeographicCoordinateSystem Wgs84 = GeographicCoordinateSystem.WGS84;
         private static readonly ProjectedCoordinateSystem WebMercatorCS = ProjectedCoordinateSystem.WebMercator;
+
         private static readonly MathTransform ToMerc =
             new CoordinateTransformationFactory()
                 .CreateFromCoordinateSystems(Wgs84, WebMercatorCS)
                 .MathTransform;
+
         private static readonly MathTransform ToWgs =
             new CoordinateTransformationFactory()
                 .CreateFromCoordinateSystems(WebMercatorCS, Wgs84)
@@ -61,8 +63,8 @@ namespace GeoProfiles.Infrastructure.Services
 
         private static Point ToMercator(Point p)
         {
-            var c = ToMerc.Transform(new[] { p.X, p.Y });
-            return new Point(c[0], c[1]) { SRID = 3857 };
+            var c = ToMerc.Transform(new[] {p.X, p.Y});
+            return new Point(c[0], c[1]) {SRID = 3857};
         }
 
         public async Task<TerrainProfileData> BuildProfileAsync(
@@ -72,11 +74,11 @@ namespace GeoProfiles.Infrastructure.Services
             double samplingMeters = DefaultSampleM,
             CancellationToken ct = default)
         {
-            const int outN = 800;
+            const int outN = 400;
 
             var project = await _db.Projects
-                .FindAsync(new object[] { projectId }, ct)
-                ?? throw new KeyNotFoundException("Project not found");
+                              .FindAsync(new object[] {projectId}, ct)
+                          ?? throw new KeyNotFoundException("Project not found");
 
             if (!project.Bbox.Contains(start) || !project.Bbox.Contains(end))
             {
@@ -84,27 +86,27 @@ namespace GeoProfiles.Infrastructure.Services
             }
 
             var startM = ToMercator(start);
-            var endM   = ToMercator(end);
+            var endM = ToMercator(end);
             var totalDistM = startM.Distance(endM);
 
-            var lineM = new LineString(new[] { startM.Coordinate, endM.Coordinate })
-            { SRID = 3857 };
+            var lineM = new LineString(new[] {startM.Coordinate, endM.Coordinate})
+                {SRID = 3857};
             var lineRef = new LengthIndexedLine(lineM);
 
             int nSamples = Math.Clamp(outN * 2, 2, MaxRawPoints);
             var rawPts = new Point[nSamples + 1];
             for (int i = 0; i <= nSamples; i++)
             {
-                double frac = (double)i / nSamples;
+                double frac = (double) i / nSamples;
                 var ptM = lineRef.ExtractPoint(totalDistM * frac);
-                var cWgs = ToWgs.Transform(new[] { ptM.X, ptM.Y });
-                rawPts[i] = new Point(cWgs[0], cWgs[1]) { SRID = 4326 };
+                var cWgs = ToWgs.Transform(new[] {ptM.X, ptM.Y});
+                rawPts[i] = new Point(cWgs[0], cWgs[1]) {SRID = 4326};
             }
 
             var heights = new double[rawPts.Length];
             for (int i = 0; i < rawPts.Length; i++)
             {
-                heights[i] = (double)await _elevProv.GetElevationAsync(rawPts[i], ct);
+                heights[i] = (double) await _elevProv.GetElevationAsync(rawPts[i], ct);
             }
 
             var x = new double[rawPts.Length];
@@ -126,7 +128,7 @@ namespace GeoProfiles.Infrastructure.Services
                 ys[i] = spline.Interpolate(xx);
             }
 
-            SplineSmooth(xs, ys, minStepM: 1000);
+            SavitzkyGolaySmooth(ys);
 
             var points = xs.Zip(ys, (d, h) => new ProfilePoint(d, h)).ToList();
 
@@ -135,7 +137,7 @@ namespace GeoProfiles.Infrastructure.Services
                 ProjectId = projectId,
                 StartPt = start,
                 EndPt = end,
-                LengthM = (decimal)totalDistM,
+                LengthM = (decimal) totalDistM,
                 CreatedAt = DateTime.UtcNow
             };
             _db.TerrainProfiles.Add(entity);
@@ -145,9 +147,9 @@ namespace GeoProfiles.Infrastructure.Services
                 points.Select((p, i) => new TerrainProfilePoints()
                 {
                     ProfileId = entity.Id,
-                    Seq     = i,
-                    DistM   = (decimal)p.Distance,
-                    ElevM   = (decimal)p.Elevation
+                    Seq = i,
+                    DistM = (decimal) p.Distance,
+                    ElevM = (decimal) p.Elevation
                 }));
             await _db.SaveChangesAsync(ct);
 
@@ -159,28 +161,108 @@ namespace GeoProfiles.Infrastructure.Services
             };
         }
 
-        private static void SplineSmooth(double[] xs, double[] ys, double minStepM = 40)
-        {
-            var xKnots = new List<double> { xs[0] };
-            var yKnots = new List<double> { ys[0] };
 
-            for (int i = 1; i < xs.Length - 1; i++)
+        private static void SavitzkyGolaySmooth(double[] ys, int windowSize = 31, int polyOrder = 3)
+        {
+            if (windowSize % 2 == 0) throw new ArgumentException("windowSize must be odd");
+            int half = windowSize / 2;
+            int n = ys.Length;
+            var result = new double[n];
+            var V = new double[windowSize, polyOrder + 1];
+            for (int i = -half; i <= half; i++)
             {
-                if (xs[i] - xKnots[^1] >= minStepM)
+                double val = 1;
+                for (int j = 0; j <= polyOrder; j++)
                 {
-                    xKnots.Add(xs[i]);
-                    yKnots.Add(ys[i]);
+                    V[i + half, j] = val;
+                    val *= i;
                 }
             }
 
-            xKnots.Add(xs[^1]);
-            yKnots.Add(ys[^1]);
 
-            var spline = CubicSpline.CreatePchip(xKnots.ToArray(), yKnots.ToArray());
-            for (int i = 0; i < xs.Length; i++)
+            var VT = Transpose(V);
+            var VTV = Multiply(VT, V);
+            var invVTV = InvertSymmetric(VTV);
+            var A = Multiply(invVTV, VT);
+            var coeff = new double[windowSize];
+            for (int i = 0; i < windowSize; i++)
+                coeff[i] = A[0, i];
+
+            for (int i = 0; i < n; i++)
             {
-                ys[i] = spline.Interpolate(xs[i]);
+                double sum = 0;
+                for (int k = -half; k <= half; k++)
+                {
+                    int idx = i + k;
+                    if (idx < 0) idx = 0;
+                    else if (idx >= n) idx = n - 1;
+                    sum += coeff[k + half] * ys[idx];
+                }
+
+                result[i] = sum;
             }
+
+            for (int i = 0; i < n; i++)
+                ys[i] = result[i];
+        }
+
+
+        private static double[,] Transpose(double[,] M)
+        {
+            int r = M.GetLength(0), c = M.GetLength(1);
+            var T = new double[c, r];
+            for (int i = 0; i < r; i++)
+            for (int j = 0; j < c; j++)
+                T[j, i] = M[i, j];
+            return T;
+        }
+
+        private static double[,] Multiply(double[,] A, double[,] B)
+        {
+            int r = A.GetLength(0), mid = A.GetLength(1), c = B.GetLength(1);
+            var C = new double[r, c];
+            for (int i = 0; i < r; i++)
+            for (int j = 0; j < c; j++)
+            for (int k = 0; k < mid; k++)
+                C[i, j] += A[i, k] * B[k, j];
+            return C;
+        }
+
+        /// <summary>
+        /// Инвертирует маленькую симметричную матрицу методом Гаусса (или любым доступным вам).
+        /// Предполагается, что размер небольшой (windowSize×windowSize).
+        /// </summary>
+        private static double[,] InvertSymmetric(double[,] M)
+        {
+            int n = M.GetLength(0);
+            var A = new double[n, n];
+            Array.Copy(M, A, M.Length);
+            var inv = new double[n, n];
+            for (int i = 0; i < n; i++)
+                inv[i, i] = 1;
+            // Простейшая реализация Гаусса
+            for (int i = 0; i < n; i++)
+            {
+                double diag = A[i, i];
+                for (int j = 0; j < n; j++)
+                {
+                    A[i, j] /= diag;
+                    inv[i, j] /= diag;
+                }
+
+                for (int k = 0; k < n; k++)
+                {
+                    if (k == i) continue;
+                    double factor = A[k, i];
+                    for (int j = 0; j < n; j++)
+                    {
+                        A[k, j] -= factor * A[i, j];
+                        inv[k, j] -= factor * inv[i, j];
+                    }
+                }
+            }
+
+            return inv;
         }
     }
 }
