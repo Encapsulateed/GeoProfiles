@@ -116,7 +116,6 @@ namespace GeoProfiles.Infrastructure.Services
                 x[i] = x[i - 1] + p0.Distance(p1);
             }
 
-            // 6. Интерполяция кубическим PCHIP-сплайном
             var spline = CubicSpline.CreatePchip(x, heights);
             var xs = new double[outN];
             var ys = new double[outN];
