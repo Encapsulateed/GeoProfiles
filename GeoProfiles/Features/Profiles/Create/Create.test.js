@@ -46,13 +46,12 @@ describe('POST /api/v1/:projectId/profile', () => {
         ];
         project = await prepareProjectInDb({ userId: user.id }, isolines);
 
-        // Read back bboxWkt, чтобы вычислить внутренние точки
         projectRec = await getProjectFromDb(project.id);
         const coords = projectRec.bboxWkt
             .match(/\(\((.+)\)\)/)[1]
             .split(',')
             .map(pt => pt.trim().split(' ').map(Number));
-        // возьмём первый и третий: [lon_min,lat_min], [lon_max,lat_max]
+
         const [ [lonMin, latMin], , [lonMax, latMax] ] = coords;
 
         const deltaLon = (lonMax - lonMin) * 0.1;

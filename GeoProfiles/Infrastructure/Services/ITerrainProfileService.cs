@@ -38,16 +38,16 @@ namespace GeoProfiles.Infrastructure.Services
         private readonly IElevationProvider _elevProv;
 
         private static readonly GeographicCoordinateSystem Wgs84 = GeographicCoordinateSystem.WGS84;
-        private static readonly ProjectedCoordinateSystem WebMercatorCS = ProjectedCoordinateSystem.WebMercator;
+        private static readonly ProjectedCoordinateSystem WebMercatorCs = ProjectedCoordinateSystem.WebMercator;
 
         private static readonly MathTransform ToMerc =
             new CoordinateTransformationFactory()
-                .CreateFromCoordinateSystems(Wgs84, WebMercatorCS)
+                .CreateFromCoordinateSystems(Wgs84, WebMercatorCs)
                 .MathTransform;
 
         private static readonly MathTransform ToWgs =
             new CoordinateTransformationFactory()
-                .CreateFromCoordinateSystems(WebMercatorCS, Wgs84)
+                .CreateFromCoordinateSystems(WebMercatorCs, Wgs84)
                 .MathTransform;
 
         private const double DefaultSampleM = 10;
@@ -63,7 +63,7 @@ namespace GeoProfiles.Infrastructure.Services
 
         private static Point ToMercator(Point p)
         {
-            var c = ToMerc.Transform(new[] {p.X, p.Y});
+            var c = ToMerc.Transform([p.X, p.Y]);
             return new Point(c[0], c[1]) {SRID = 3857};
         }
 
@@ -77,7 +77,7 @@ namespace GeoProfiles.Infrastructure.Services
             const int outN = 400;
 
             var project = await _db.Projects
-                              .FindAsync(new object[] {projectId}, ct)
+                              .FindAsync([projectId], ct)
                           ?? throw new KeyNotFoundException("Project not found");
 
             if (!project.Bbox.Contains(start) || !project.Bbox.Contains(end))
@@ -89,7 +89,7 @@ namespace GeoProfiles.Infrastructure.Services
             var endM = ToMercator(end);
             var totalDistM = startM.Distance(endM);
 
-            var lineM = new LineString(new[] {startM.Coordinate, endM.Coordinate})
+            var lineM = new LineString([startM.Coordinate, endM.Coordinate])
                 {SRID = 3857};
             var lineRef = new LengthIndexedLine(lineM);
 
@@ -99,7 +99,7 @@ namespace GeoProfiles.Infrastructure.Services
             {
                 double frac = (double) i / nSamples;
                 var ptM = lineRef.ExtractPoint(totalDistM * frac);
-                var cWgs = ToWgs.Transform(new[] {ptM.X, ptM.Y});
+                var cWgs = ToWgs.Transform([ptM.X, ptM.Y]);
                 rawPts[i] = new Point(cWgs[0], cWgs[1]) {SRID = 4326};
             }
 
@@ -132,7 +132,7 @@ namespace GeoProfiles.Infrastructure.Services
 
             var points = xs.Zip(ys, (d, h) => new ProfilePoint(d, h)).ToList();
 
-            var entity = new TerrainProfiles()
+            var entity = new TerrainProfiles
             {
                 ProjectId = projectId,
                 StartPt = start,
@@ -140,6 +140,7 @@ namespace GeoProfiles.Infrastructure.Services
                 LengthM = (decimal) totalDistM,
                 CreatedAt = DateTime.UtcNow
             };
+
             _db.TerrainProfiles.Add(entity);
             await _db.SaveChangesAsync(ct);
 
@@ -162,7 +163,7 @@ namespace GeoProfiles.Infrastructure.Services
         }
 
 
-        private static void SavitzkyGolaySmooth(double[] ys, int windowSize = 31, int polyOrder = 3)
+        private static void SavitzkyGolaySmooth(double[] ys, int windowSize = 51, int polyOrder = 3)
         {
             if (windowSize % 2 == 0) throw new ArgumentException("windowSize must be odd");
             int half = windowSize / 2;

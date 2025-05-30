@@ -14,7 +14,7 @@ namespace GeoProfiles.Infrastructure.Services
     public class MockDemOptions
     {
         public double StepHeight { get; set; } = 50;
-        public double JitterFactor { get; set; } = 0.1;
+        public double JitterFactor { get; set; } = 0.0;
     }
 
     public interface IElevationProvider

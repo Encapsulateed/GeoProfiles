@@ -2,7 +2,7 @@ create table isolines
 (
     id         uuid primary key     default uuid_generate_v4(),
     project_id uuid        not null,
-    level      int         not null check (level >= 0), -- 0 = inner, >0 = дальше
+    level      int         not null check (level >= 0),
     geom       geometry(Polygon, 4326) not null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
