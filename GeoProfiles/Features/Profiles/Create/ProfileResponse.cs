@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using GeoProfiles.Infrastructure.Services;
+using GeoProfiles.Services;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace GeoProfiles.Features.Profiles.Create;

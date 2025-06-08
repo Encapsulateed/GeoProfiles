@@ -3,7 +3,7 @@ using GeoProfiles.Infrastructure.Settings;
 using GeoProfiles.Model;
 using Microsoft.Extensions.Options;
 
-namespace GeoProfiles.Infrastructure.Services;
+namespace GeoProfiles.Services;
 
 public interface ITokenService
 {

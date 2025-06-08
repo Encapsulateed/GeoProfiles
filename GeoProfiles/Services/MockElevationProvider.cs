@@ -1,16 +1,11 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Index.Strtree;
 using NetTopologySuite.Operation.Distance;
 
-namespace GeoProfiles.Infrastructure.Services
+namespace GeoProfiles.Services
 {
     public class MockDemOptions
     {
@@ -124,7 +119,7 @@ namespace GeoProfiles.Infrastructure.Services
                     boundaryPoint.X + directionVector.X * 10,
                     boundaryPoint.Y + directionVector.Y * 10);
                 
-                var ray = new LineString(new[] { boundaryPoint.Coordinate, rayEnd });
+                var ray = new LineString([boundaryPoint.Coordinate, rayEnd]);
                 var intersection = ray.Intersection(outer.Poly);
 
                 return !intersection.IsEmpty

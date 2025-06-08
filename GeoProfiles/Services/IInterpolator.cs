@@ -1,4 +1,4 @@
-namespace GeoProfiles.Infrastructure.Services;
+namespace GeoProfiles.Services;
 
 public interface IInterpolator
 {

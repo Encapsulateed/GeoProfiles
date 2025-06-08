@@ -3,7 +3,7 @@ using FluentValidation;
 using GeoProfiles.Application.Auth;
 using GeoProfiles.Infrastructure;
 using GeoProfiles.Infrastructure.Examples;
-using GeoProfiles.Infrastructure.Services;
+using GeoProfiles.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

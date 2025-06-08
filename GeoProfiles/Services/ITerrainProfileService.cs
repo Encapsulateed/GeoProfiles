@@ -1,18 +1,12 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using GeoProfiles.Model;
-using GeoProfiles.Model.Dto;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.LinearReferencing;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 
-namespace GeoProfiles.Infrastructure.Services
+namespace GeoProfiles.Services
 {
     public readonly record struct ProfilePoint(double Distance, double Elevation);
 
@@ -52,9 +46,8 @@ namespace GeoProfiles.Infrastructure.Services
 
         private const double DefaultSampleM = 10;
         private const int MaxRawPoints = 20_000;
-        private const int OutN = 400; // Финализированная константа
+        private const int OutN = 400; 
 
-        // Кэш коэффициентов Савицкого-Голая
         private static readonly ConcurrentDictionary<(int, int), double[]> SavGolCoefficientsCache = new();
 
         private static Point ToMercator(Point p)
@@ -137,6 +130,7 @@ namespace GeoProfiles.Infrastructure.Services
             {
                 double xx = totalDistM * i / (OutN - 1);
                 xs[i] = xx;
+                
                 ys[i] = spline.Interpolate(xx);
             }
 
