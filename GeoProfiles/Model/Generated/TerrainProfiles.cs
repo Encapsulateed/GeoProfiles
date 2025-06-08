@@ -20,6 +20,8 @@ public partial class TerrainProfiles
 
     public DateTime UpdatedAt { get; set; }
 
+    public string? Comment { get; set; }
+
     public virtual Projects Project { get; set; } = null!;
 
     public virtual ICollection<TerrainProfilePoints> TerrainProfilePoints { get; set; } = new List<TerrainProfilePoints>();
