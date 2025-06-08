@@ -1,9 +1,9 @@
-using GeoProfiles.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using GeoProfiles.Infrastructure.Settings;
+using GeoProfiles.Services;
 
 namespace GeoProfiles.Infrastructure.Extensions;
 

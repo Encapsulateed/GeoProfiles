@@ -1,4 +1,4 @@
-using GeoProfiles.Infrastructure.Services;
+using GeoProfiles.Services;
 
 namespace GeoProfiles.Infrastructure.Modules;
 

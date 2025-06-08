@@ -105,6 +105,7 @@ public partial class GeoProfilesContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("created_at");
+            entity.Property(e => e.Direction).HasColumnName("direction");
             entity.Property(e => e.Geom)
                 .HasColumnType("geometry(Polygon,4326)")
                 .HasColumnName("geom");

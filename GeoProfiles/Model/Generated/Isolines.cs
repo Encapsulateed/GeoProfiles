@@ -18,5 +18,7 @@ public partial class Isolines
 
     public DateTime UpdatedAt { get; set; }
 
+    public int? Direction { get; set; }
+
     public virtual Projects Project { get; set; } = null!;
 }

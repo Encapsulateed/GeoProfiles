@@ -1,20 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Geometries.Implementation;
 using NetTopologySuite.Operation.Buffer;
 using NetTopologySuite.Operation.Union;
 
-namespace GeoProfiles.Infrastructure.Services
+namespace GeoProfiles.Services
 {
     public sealed class IsolineGeneratorService : IIsolineGeneratorService
     {
         private static readonly GeometryFactory Gf =
             new(new PrecisionModel(PrecisionModels.Floating), 4326, CoordinateArraySequenceFactory.Instance);
 
-        private const double TAU = Math.PI * 2;
+        private const double Tau = Math.PI * 2;
 
         public Task<IEnumerable<Polygon>> GenerateAsync(
             BoundingBox bbox, int levels = 12, Guid? seed = null)
@@ -71,7 +67,6 @@ namespace GeoProfiles.Infrastructure.Services
 
         private Geometry CreateStableTerrain(BoundingBox bbox, Random rnd)
         {
-            double minDim = Math.Min(bbox.Width, bbox.Height);
             var features = new List<Geometry>();
 
             var mountain = CreateMountain(bbox, rnd);
@@ -129,7 +124,7 @@ namespace GeoProfiles.Infrastructure.Services
 
             for (int i = 0; i < count; i++)
             {
-                double angle = rnd.NextDouble() * TAU;
+                double angle = rnd.NextDouble() * Tau;
                 double distance = rnd.NextDouble() * minDim * 0.2; 
                 double x = centroid.X + Math.Cos(angle) * distance;
                 double y = centroid.Y + Math.Sin(angle) * distance;
@@ -152,7 +147,7 @@ namespace GeoProfiles.Infrastructure.Services
 
             for (int i = 0; i < count; i++)
             {
-                double angle = rnd.NextDouble() * TAU;
+                double angle = rnd.NextDouble() * Tau;
                 double distance = minDim * (0.3 + rnd.NextDouble() * 0.25); 
                 double x = bbox.CenterX + Math.Cos(angle) * distance;
                 double y = bbox.CenterY + Math.Sin(angle) * distance;
@@ -167,11 +162,11 @@ namespace GeoProfiles.Infrastructure.Services
         
         private Polygon CreateEllipse(double x, double y, double a, double b, int points, Random rnd)
         {
-            if (points < 36) points = 36; 
+            if (points < 36) points = 36;
 
             var coords = new Coordinate[points + 1];
-            double angleStep = TAU / points;
-            double noiseIntensity = 0.18; 
+            double angleStep = Tau / points;
+            double noiseIntensity = 0.18;
 
             double SmoothNoise(double seed, double angle, double frequency)
             {
@@ -185,8 +180,8 @@ namespace GeoProfiles.Infrastructure.Services
             {
                 double angle = i * angleStep;
 
-                double noiseFactor = 1.0 + 
-                    SmoothNoise(seed1, angle, 3.0) + 
+                double noiseFactor = 1.0 +
+                    SmoothNoise(seed1, angle, 3.0) +
                     SmoothNoise(seed2, angle, 8.0) * 0.5;
 
                 double effectiveA = a * noiseFactor * (0.92 + rnd.NextDouble() * 0.16);
@@ -341,14 +336,13 @@ namespace GeoProfiles.Infrastructure.Services
         }
 
         private static Polygon BboxPolygon(BoundingBox b) =>
-            Gf.CreatePolygon(new[]
-            {
+            Gf.CreatePolygon([
                 new Coordinate(b.MinX, b.MinY),
                 new Coordinate(b.MaxX, b.MinY),
                 new Coordinate(b.MaxX, b.MaxY),
                 new Coordinate(b.MinX, b.MaxY),
                 new Coordinate(b.MinX, b.MinY)
-            });
+            ]);
 
         private static IEnumerable<Polygon> Flatten(Geometry g)
         {
