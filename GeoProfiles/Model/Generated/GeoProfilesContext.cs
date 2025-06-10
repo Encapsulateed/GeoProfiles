@@ -12,6 +12,8 @@ public partial class GeoProfilesContext : DbContext
     {
     }
 
+    public virtual DbSet<ContourLines> ContourLines { get; set; }
+
     public virtual DbSet<ElevationCache> ElevationCache { get; set; }
 
     public virtual DbSet<FlywaySchemaHistory> FlywaySchemaHistory { get; set; }
@@ -36,6 +38,22 @@ public partial class GeoProfilesContext : DbContext
             .HasPostgresExtension("postgis")
             .HasPostgresExtension("uuid-ossp")
             .HasPostgresExtension("topology", "postgis_topology");
+
+        modelBuilder.Entity<ContourLines>(entity =>
+        {
+            entity.HasKey(e => e.Fid).HasName("contour_lines_pk");
+
+            entity.ToTable("contour_lines");
+
+            entity.HasIndex(e => e.Geom, "contour_lines_geom_geom_idx").HasMethod("gist");
+
+            entity.Property(e => e.Fid).HasColumnName("fid");
+            entity.Property(e => e.Geom)
+                .HasColumnType("geometry(LineString,4326)")
+                .HasColumnName("geom");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Level).HasColumnName("level");
+        });
 
         modelBuilder.Entity<ElevationCache>(entity =>
         {

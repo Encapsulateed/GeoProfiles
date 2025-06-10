@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-docker compose down --remove-orphans -v
+docker compose down --remove-orphans
 docker compose up -d
 docker compose run --rm migration
 
