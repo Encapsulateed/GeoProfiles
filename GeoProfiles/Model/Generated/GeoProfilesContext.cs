@@ -226,6 +226,7 @@ public partial class GeoProfilesContext : DbContext
             entity.Property(e => e.Seq).HasColumnName("seq");
             entity.Property(e => e.DistM).HasColumnName("dist_m");
             entity.Property(e => e.ElevM).HasColumnName("elev_m");
+            entity.Property(e => e.IsOnIsoline).HasColumnName("is_on_isoline");
 
             entity.HasOne(d => d.Profile).WithMany(p => p.TerrainProfilePoints)
                 .HasForeignKey(d => d.ProfileId)

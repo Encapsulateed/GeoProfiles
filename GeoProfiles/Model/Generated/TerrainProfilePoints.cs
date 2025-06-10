@@ -13,5 +13,7 @@ public partial class TerrainProfilePoints
 
     public decimal ElevM { get; set; }
 
+    public bool? IsOnIsoline { get; set; }
+
     public virtual TerrainProfiles Profile { get; set; } = null!;
 }

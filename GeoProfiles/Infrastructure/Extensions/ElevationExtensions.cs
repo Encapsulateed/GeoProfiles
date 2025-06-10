@@ -14,7 +14,7 @@ public static class ElevationExtensions
             .ValidateDataAnnotations();
 
         services
-            .AddTransient<IElevationProvider,MockElevationProvider>();
+            .AddTransient<IElevationProvider, ContourLineElevationProvider>();
 
         return services;
     }
