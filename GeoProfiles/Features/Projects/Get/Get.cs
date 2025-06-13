@@ -52,7 +52,7 @@ public class Get(
             .AsNoTracking()
             .Where(cl => cl.Geom != null)
             .OrderBy(cl => cl.Fid)          // жёсткое бизнес-правило MVP
-            .Take(5000)
+            .Take(1000)
             .Select(cl => new              // сразу фиксируем SRID, чтобы фронту было проще
             {
                 LineString = cl.Geom!,     // гарантированно non-null после Where

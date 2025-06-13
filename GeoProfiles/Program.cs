@@ -25,7 +25,6 @@ builder.Services.AddDbContext<GeoProfilesContext>(options =>
     }
 );
 
-
 // Add logging
 builder.AddSerilogLogging();
 

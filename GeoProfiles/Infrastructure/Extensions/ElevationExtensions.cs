@@ -8,13 +8,8 @@ public static class ElevationExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services
-            .AddOptions<MockDemOptions>()
-            .Bind(configuration.GetSection("Dem"))
-            .ValidateDataAnnotations();
-
-        services
-            .AddTransient<IElevationProvider, ContourLineElevationProvider>();
+        services.AddSingleton<IContourLineSpatialIndex, ContourLineSpatialIndex>();
+        services.AddSingleton<IElevationProvider,       ContourLineElevationProvider>();
 
         return services;
     }

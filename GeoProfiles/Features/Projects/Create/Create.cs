@@ -43,7 +43,7 @@ public class Create(
         var sourceIsolines = await db.ContourLines
             .AsNoTracking()
             .OrderBy(cl => cl.Fid)
-            .Take(5000)
+            .Take(1000)
             .Where(cl => cl.Geom != null)
             .Select(cl => new { LineString = cl.Geom!, cl.Level })
             .ToListAsync(cancellationToken);

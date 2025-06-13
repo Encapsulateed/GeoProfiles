@@ -34,7 +34,6 @@ public class Create(
         logger.LogInformation("Creating profile for project {ProjectId}", projectId);
         new Validator().ValidateAndThrow(request);
 
-        // ── авторизация ─────────────────────────────────────────────────────────
         var userIdStr = User.Claims.FirstOrDefault(c => c.Type == Claims.UserId)?.Value;
         if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
         {
@@ -51,7 +50,6 @@ public class Create(
             return NotFound(new Errors.UserNotFound("User not found"));
         }
 
-        // ── проверка проекта ────────────────────────────────────────────────────
         var project = await db.Projects
             .Where(p => p.UserId == userId && p.Id == projectId)
             .SingleOrDefaultAsync(cancellationToken);
@@ -61,14 +59,12 @@ public class Create(
             return NotFound(new Errors.ProjectNotFound("Project not found"));
         }
 
-        // ── построение профиля ──────────────────────────────────────────────────
         var start = new Point(request.Start[0], request.Start[1]) { SRID = 4326 };
         var end   = new Point(request.End[0],   request.End[1])   { SRID = 4326 };
 
         var profile = await terrainProfileService
             .BuildProfileAsync(start, end, projectId, ct: cancellationToken);
 
-        // ── формируем DTO ───────────────────────────────────────────────────────
         var response = new ProfileResponse
         {
             ProfileId  = profile.Id,
@@ -83,7 +79,6 @@ public class Create(
         return StatusCode(StatusCodes.Status201Created, response);
     }
 
-    // ────────────────────────────────────────────────────────────────────────────
     private class Validator : AbstractValidator<ProfileRequest>
     {
         public Validator()
