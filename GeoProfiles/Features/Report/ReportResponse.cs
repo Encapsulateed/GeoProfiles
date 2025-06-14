@@ -1,13 +1,11 @@
-// GeoProfiles/Features/Reports/Get/ReportDto.cs
 using System.Text.Json.Serialization;
 using GeoProfiles.Features.Profiles.Get;
-using GeoProfiles.Features.Projects.Create; // FullProfileResponse
-using GeoProfiles.Model.Dto;              // IsolineDto
+using GeoProfiles.Features.Projects.Create;
+using GeoProfiles.Model.Dto;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace GeoProfiles.Features.Reports.Get;
 
-/// <summary>Ответ /report – для генерации PDF на фронте.</summary>
 public record ReportResponse
 {
     [JsonPropertyName("projectId")]  public Guid   ProjectId { get; init; }

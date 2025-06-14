@@ -36,7 +36,6 @@ public class ProfileResponseExample : IExamplesProvider<ProfileResponse>
                 new( 150,  14.8,  false)
             },
 
-            // Подмножество точек, пересекающих изолинии
             MainPoints = new List<ProfilePoint>
             {
                 new(0,   12.3, true),

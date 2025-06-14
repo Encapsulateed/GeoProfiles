@@ -1,4 +1,3 @@
-// GeoProfiles/Services/TerrainProfileService.cs
 
 using System.Collections.Concurrent;
 using GeoProfiles.Model;
@@ -10,7 +9,6 @@ using ProjNet.CoordinateSystems.Transformations;
 
 namespace GeoProfiles.Services;
 
-/*────────────────────────────────────────── модели ──────────────────*/
 public readonly record struct ProfilePoint(double Distance, double Elevation, bool IsOnIsoline);
 
 public class TerrainProfileData
@@ -30,12 +28,10 @@ public interface ITerrainProfileService
         CancellationToken ct = default);
 }
 
-/*────────────────────────────────────────── реализация ─────────────*/
 public sealed class TerrainProfileService(
     GeoProfilesContext db,
     IElevationProvider elevProv) : ITerrainProfileService
 {
-    /*── CRS ───────────────────────────────────────────────────*/
     private static readonly GeographicCoordinateSystem Wgs84 = GeographicCoordinateSystem.WGS84;
     private static readonly ProjectedCoordinateSystem WebMercator = ProjectedCoordinateSystem.WebMercator;
 
@@ -49,17 +45,14 @@ public sealed class TerrainProfileService(
             .CreateFromCoordinateSystems(WebMercator, Wgs84)
             .MathTransform;
 
-    /*── параметры прореживания ───────────────────────────────*/
-    private const double ClusterRadM = 20; // «метла» при сборе пересечений
-    private const double MinIsolineGapM = 50; // окончательный минимум между маркерами
-    private const int OutN = 400; // итоговых узлов профиля
+    private const double ClusterRadM = 20;
+    private const double MinIsolineGapM = 50;
+    private const int OutN = 400;
 
-    /*── прочие константы ─────────────────────────────────────*/
     private const double DefaultSampleM = 10;
     private const int MaxRawPoints = 20_000;
     private static readonly ConcurrentDictionary<(int, int), double[]> SavGolCache = new();
 
-    /*──────────────────────── API ─────────────────────────────*/
     public async Task<TerrainProfileData> BuildProfileAsync(
         Point start,
         Point end,
@@ -74,7 +67,6 @@ public sealed class TerrainProfileService(
                 .FirstOrDefaultAsync(p => p.Id == projectId, ct)
             ?? throw new KeyNotFoundException("Project not found");
 
-        /*──── исходная линия в Web Mercator ───────────────────*/
         var p0M = ToMercator(start);
         var p1M = ToMercator(end);
         var lenM = p0M.Distance(p1M);
@@ -84,7 +76,6 @@ public sealed class TerrainProfileService(
         var lineM = new LineString([p0M.Coordinate, p1M.Coordinate]) { SRID = 3857 };
         var lineRefM = new LengthIndexedLine(lineM);
 
-        /*──── дискретизация отрезка ───────────────────────────*/
         int nRaw = Math.Clamp((int)Math.Ceiling(lenM / samplingMeters), 100, MaxRawPoints);
         var rawW = new Point[nRaw + 1];
         var rawM = new Point[nRaw + 1];
@@ -112,7 +103,6 @@ public sealed class TerrainProfileService(
         for (int i = 1; i < rawM.Length; i++)
             xRaw[i] = xRaw[i - 1] + rawM[i - 1].Distance(rawM[i]);
 
-        /*──── PCHIP-интерполяция + сглаживание ───────────────*/
         var spline = CubicSpline.CreatePchip(xRaw, elev);
 
         var xs = new double[OutN];

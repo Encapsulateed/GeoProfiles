@@ -15,7 +15,7 @@ public interface IContourLineSpatialIndex
 
 public sealed class ContourLineSpatialIndex : IContourLineSpatialIndex
 {
-    public  const double SearchRadDeg = 1e-3;   // ≈ 110 м
+    public  const double SearchRadDeg = 1e-3;
     private const double EnvelopeGrow = SearchRadDeg;
 
     private static readonly Lazy<(STRtree<ContourLines> Tree, Envelope AllEnv)>

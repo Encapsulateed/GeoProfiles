@@ -1,4 +1,3 @@
-// GeoProfiles/Features/Reports/Get/Get.cs
 using System.Net.Mime;
 using FluentValidation;
 using GeoProfiles.Application.Auth;

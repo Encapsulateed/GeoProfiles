@@ -1,4 +1,3 @@
-// GeoProfiles/Services/ContourLineElevationProvider.cs
 using NetTopologySuite.Geometries;
 
 namespace GeoProfiles.Services;

@@ -24,10 +24,8 @@ public class Get(GeoProfilesContext db, ILogger<Get> logger) : ControllerBase
         [FromRoute] ProfileGetRequest request,
         CancellationToken             cancellationToken = default)
     {
-        // ── валидация GUID-ов ──────────────────────────────────────────────────
         new ProfileGetRequestValidator().ValidateAndThrow(request);
 
-        // ── авторизация ───────────────────────────────────────────────────────
         var sub = User.FindFirstValue(Claims.UserId);
         if (!Guid.TryParse(sub, out var userId))
         {
@@ -35,7 +33,6 @@ public class Get(GeoProfilesContext db, ILogger<Get> logger) : ControllerBase
             return Unauthorized(new Errors.UserUnauthorized("User is not authorized"));
         }
 
-        // ── проект ────────────────────────────────────────────────────────────
         var project = await db.Projects.AsNoTracking()
             .SingleOrDefaultAsync(
                 p => p.Id == request.ProjectId && p.UserId == userId,
@@ -47,7 +44,6 @@ public class Get(GeoProfilesContext db, ILogger<Get> logger) : ControllerBase
             return NotFound(new Errors.ProjectNotFound("Project not found"));
         }
 
-        // ── профиль ───────────────────────────────────────────────────────────
         var profile = await db.TerrainProfiles.AsNoTracking()
             .SingleOrDefaultAsync(
                 tp => tp.Id == request.ProfileId && tp.ProjectId == request.ProjectId,
@@ -59,7 +55,6 @@ public class Get(GeoProfilesContext db, ILogger<Get> logger) : ControllerBase
             return NotFound(new Errors.ResourceNotFound("Profile not found"));
         }
 
-        // ── точки профиля из БД ───────────────────────────────────────────────
         var rawPts = await db.TerrainProfilePoints.AsNoTracking()
             .Where(p => p.ProfileId == request.ProfileId)
             .OrderBy(p => p.Seq)
@@ -76,7 +71,7 @@ public class Get(GeoProfilesContext db, ILogger<Get> logger) : ControllerBase
         foreach (var tpp in rawPts)
         {
             var dist = (double)tpp.DistM;
-            double t = dist / lenTotal;                     // 0…1 вдоль сегмента
+            double t = dist / lenTotal;
             var lon = startLon + t * (endLon - startLon);
             var lat = startLat + t * (endLat - startLat);
             var ptW = new Point(lon, lat) { SRID = 4326 };
